@@ -1,4 +1,5 @@
-# paper-chase
+# shave
+Like a clean shave (a template for fresh starts)
 
 ## Table of Contents
 1. [Getting started](#getting-started)
