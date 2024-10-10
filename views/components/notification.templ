@@ -1,0 +1,19 @@
+package components
+
+templ Notification() {
+}
+
+script SuccessNotification(message string) {
+UIkit.notification({
+message: `<div class='uk-text-capitalize uk-flex uk-flex-middle'><span class='uk-flex-none uk-margin-small-right'
+    uk-icon='icon: check; ratio: 0.8'></span> ${message}</div>`
+})
+}
+
+script FailureNotification(message string) {
+UIkit.notification({
+message: `<div class='uk-text-capitalize uk-flex uk-flex-middle'><span class='uk-flex-none uk-margin-small-right'
+    uk-icon='icon: ban; ratio: 0.8'></span> ${message}</div>`,
+status: "danger",
+})
+}

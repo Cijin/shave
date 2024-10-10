@@ -1,0 +1,15 @@
+package components
+
+import "shave/internal/version"
+
+templ Footer() {
+<footer class="uk-navbar-container">
+  <nav class="border-t border-border">
+    <div uk-navbar>
+      <div class="uk-navbar-center">
+        <p class="uk-comment-meta">Version: { version.Version }</p>
+      </div>
+    </div>
+  </nav>
+</footer>
+}
