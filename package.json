@@ -1,0 +1,14 @@
+{
+  "name": "shave",
+  "version": "1.0.0",
+  "scripts": {
+    "build-css": "tailwindcss -o ./public/css/style.css --minify"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "franken-ui": "^1.1.0",
+    "postcss": "^8.4.47"
+  }
+}
