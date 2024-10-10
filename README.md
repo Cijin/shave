@@ -40,8 +40,6 @@ Ensure the following dev-dependencies are installed:
 1. Start the database by running `docker compose up`, use the `-d` flag to run it as a daemon
 2. Run `make dev`, this will run all the project dependencies in watch mode
 
-(TODO Update docker compose file)
-
 ## Migrations 
 
 * Ensure [goose](https://github.com/pressly/goose?tab=readme-ov-file#install) is installed
