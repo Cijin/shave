@@ -1,0 +1,13 @@
+.env
+bin
+server
+migrations
+tmp/*
+
+style.css
+
+*_templ.go
+*_templ.txt
+
+package-lock.json
+node_modules/
