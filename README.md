@@ -2,20 +2,19 @@
 
 ## Table of Contents
 1. [Getting started](#getting-started)
-2. [Login AWS](#login-aws)
-3. [Set env](#set-env)
-4. [Running dev environment](#running-dev-environment)
-5. [Migrations](#migrations)
+2. [Set env](#set-env)
+3. [Running dev environment](#running-dev-environment)
+4. [Migrations](#migrations)
     1. [Create new migration](#create-new-migration)
     2. [Migrating down](#migration.migrate-down)
     3. [Viewing current migration version](#viewing-current-migration-version)
-6. [Directory structure](#directory-structure)
+5. [Directory structure](#directory-structure)
     1 [Views](#views)
     2. [Pkg](#pkg)
-7. [Versioning](#versioning)
+6. [Versioning](#versioning)
     1. [Creating new versions](#creating-new-version)
     2. [Viewing version info](#viewing-version-info)
-8. [Production](#production)
+7. [Production](#production)
 
 
 ## Getting started 
