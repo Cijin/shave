@@ -17,6 +17,7 @@ RUN CGO_ENABLED=1 GOOS=linux go build -ldflags "-X shave/internal/version.Versio
 RUN CGO_ENABLED=1 GOOS=linux go build -o migration ./cmd/migration
 
 FROM golang:1.23.2-bookworm
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY --from=tailwind-builder /app/public ./public
