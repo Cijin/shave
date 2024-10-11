@@ -16,6 +16,7 @@ Like a clean shave (a template for fresh starts)
     1. [Creating new versions](#creating-new-version)
     2. [Viewing version info](#viewing-version-info)
 7. [Production](#production)
+8. [Using the right final image](#final-image)
 
 
 ## Getting started 
@@ -115,3 +116,8 @@ When creating a new build using the `make prod` command without a new tag. This 
 
 When making production builds, always use the `make prod` command. **DO NOT** invoke the `docker build` command manually. This ensures, the build tag and server 
 versions match. This will make it easier to handle managing containers much more easier.
+
+## Final image
+
+Since we `go-libsql` requires `CGO`, unless the final image contains the neccessary `glibc` binaries, the final binary will not run. You can check this by running `ldd <go-binary>`.
+The latest `golang:1.23-bookworm` image seems to contain all the neccessary files. Hence, why I've chosen that.
