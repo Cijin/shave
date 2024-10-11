@@ -30,7 +30,6 @@ WORKDIR /app
 COPY --from=tailwind-builder /app/public ./public
 COPY --from=go-builder /app/server .
 
-COPY --from=go-builder /app/internal/sql/schema ./internal/sql/schema
 COPY --from=go-builder /app/migration .
 
 EXPOSE 8080

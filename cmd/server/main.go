@@ -23,7 +23,10 @@ import (
 	"github.com/go-chi/httprate"
 )
 
-const defaultPort = "8080"
+const (
+	defaultPort  = "8080"
+	syncInterval = time.Minute
+)
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -49,6 +52,7 @@ func main() {
 
 	connector, err := libsql.NewEmbeddedReplicaConnector(dbPath, primaryURL,
 		libsql.WithAuthToken(authToken),
+		libsql.WithSyncInterval(syncInterval),
 	)
 	if err != nil {
 		slog.Error("Error creating connector", "LIBSQL_ERROR", err)

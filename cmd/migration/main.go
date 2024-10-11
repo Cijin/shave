@@ -18,7 +18,7 @@ var embedMigrations embed.FS
 func main() {
 	sqlURL := os.Getenv("SQL_URL")
 	if sqlURL == "" {
-		log.Fatal("No SQL_URL set in .env")
+		log.Fatal("No SQL_URL set in env")
 	}
 
 	db, err := sql.Open("libsql", sqlURL)
@@ -36,7 +36,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := goose.Up(db, "sqlc/schema"); err != nil {
+	if err := goose.Up(db, "migrations"); err != nil {
 		log.Fatal(err)
 	}
 }
