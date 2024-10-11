@@ -12,7 +12,6 @@ require (
 	github.com/gorilla/schema v1.4.1
 	github.com/gorilla/sessions v1.4.0
 	github.com/joho/godotenv v1.5.1
-	github.com/lib/pq v1.10.9
 	github.com/pressly/goose/v3 v3.22.1
 	github.com/tursodatabase/go-libsql v0.0.0-20240916111504-922dfa87e1e6
 )

@@ -13,15 +13,16 @@ RUN go mod download
 RUN go install github.com/a-h/templ/cmd/templ@v0.2.778
 
 RUN templ generate
-RUN GOOS=linux go build -ldflags "-X shave/internal/version.Version=$(git describe --tags --always --dirty)" -o server ./cmd/server
-RUN GOOS=linux go build -o migration ./cmd/migration
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags "-X shave/internal/version.Version=$(git describe --tags --always --dirty)" -o server ./cmd/server
+RUN CGO_ENABLED=1 GOOS=linux go build -o migration ./cmd/migration
 
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
+FROM golang:1.23.2-bookworm
+
 WORKDIR /app
-
 COPY --from=tailwind-builder /app/public ./public
 COPY --from=go-builder /app/server .
 COPY --from=go-builder /app/migration .
+
+EXPOSE 8080
 
 ENTRYPOINT ["/bin/sh", "-c", "./migration && ./server"]
