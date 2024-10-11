@@ -9,7 +9,6 @@ import (
 
 type Session struct {
 	AccessToken string
-	Sub         string
 }
 
 func (s Session) Valid(ctx context.Context) Problems {
@@ -17,10 +16,6 @@ func (s Session) Valid(ctx context.Context) Problems {
 
 	if s.AccessToken == "" {
 		problems.Add("AccessToken", "Acess token is empty")
-	}
-
-	if s.Sub == "" {
-		problems.Add("AccessToken", "Sub is empty")
 	}
 
 	return problems

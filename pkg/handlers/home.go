@@ -1,7 +1,11 @@
 package handlers
 
-import "net/http"
+import (
+	"net/http"
 
-func HomePage(w http.ResponseWriter, r *http.Request) {
+	"shave/views/home"
+)
+
+func (h *HttpHandler) HomePage(w http.ResponseWriter, r *http.Request) {
 	renderComponent(w, r, home.Index())
 }

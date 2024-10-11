@@ -34,13 +34,7 @@ func (s *Store) GetSession(r *http.Request) (data.Session, error) {
 		return sessionData, errors.New("access token is malformed")
 	}
 
-	sub, ok := session.Values[SubKey].(string)
-	if !ok {
-		return sessionData, errors.New("sub is malformed")
-	}
-
 	sessionData.AccessToken = accessToken
-	sessionData.Sub = sub
 
 	return sessionData, nil
 }
@@ -80,7 +74,6 @@ func (s *Store) GetSessionUser(r *http.Request) (data.SessionUser, error) {
 func (s *Store) SaveSession(w http.ResponseWriter, r *http.Request, sessionData data.Session) error {
 	storeData := map[string]interface{}{
 		AccessTokenKey: sessionData.AccessToken,
-		SubKey:         sessionData.Sub,
 	}
 
 	return s.save(w, r, storeData)
@@ -90,7 +83,6 @@ func (s *Store) SaveSessionUser(w http.ResponseWriter, r *http.Request, sessionU
 	storeData := map[string]interface{}{
 		EmailKey:      sessionUser.Email,
 		RememberMeKey: sessionUser.RememberMe,
-		RoleKey:       sessionUser.Role,
 		UserIdKey:     sessionUser.UserId,
 	}
 
