@@ -1,4 +1,3 @@
-// This is custom goose binary with postgres support only.
 package main
 
 import (

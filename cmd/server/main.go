@@ -7,16 +7,18 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"paper-chase/internal/version"
-	"paper-chase/pkg/handlers"
-	"paper-chase/pkg/middleware"
 	"path/filepath"
 	"time"
+
+	"shave/internal/version"
+	"shave/pkg/handlers"
+
+	"shave/pkg/middleware"
 
 	m "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
+	"github.com/tursodatabase/go-libsql"
 
 	"github.com/go-chi/httprate"
 )
@@ -29,11 +31,32 @@ func main() {
 	}
 
 	// Db Setup -------------------------
-	dbUrl := os.Getenv("DB_URL")
-	db, err := sql.Open("postgres", dbUrl)
-	if err != nil {
-		slog.Error("Failed to open db.", "Error", err)
+	dbName := os.Getenv("DB_NAME")
+	if dbName == "" {
+		slog.Error("DB_NAME cannot be empty", "ENV_ERROR", "missing db name")
 	}
+
+	dir, err := os.MkdirTemp("", "libsql-*")
+	if err != nil {
+		slog.Error("Error creating temporary directory", "OS_ERROR", err)
+		os.Exit(1)
+	}
+	defer os.RemoveAll(dir)
+
+	dbPath := filepath.Join(dir, dbName)
+	primaryURL := os.Getenv("DB_URL")
+	authToken := os.Getenv("TURSO_AUTH_TOKEN")
+
+	connector, err := libsql.NewEmbeddedReplicaConnector(dbPath, primaryURL,
+		libsql.WithAuthToken(authToken),
+	)
+	if err != nil {
+		slog.Error("Error creating connector", "LIBSQL_ERROR", err)
+		os.Exit(1)
+	}
+	defer connector.Close()
+
+	db := sql.OpenDB(connector)
 	defer db.Close()
 
 	// Port -------------------------
@@ -85,10 +108,6 @@ func main() {
 	slog.Info("Server starting", "Version", version.Version, "Port", port)
 	if err := server.ListenAndServe(); err != nil {
 		slog.Error("Server failed, shutting down", "error", err)
-
-		for _, cancel := range h.Cancels {
-			cancel()
-		}
 
 		if err := server.Shutdown(context.Background()); err != nil {
 			slog.Error("Server shutdown failed", "error", err)

@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"context"
 	"database/sql"
 	"log/slog"
 	"net/http"
-	"paper-chase/internal/database"
-	"paper-chase/pkg/store"
-	"time"
+
+	"shave/internal/database"
+	"shave/pkg/store"
+	"shave/views/internalError"
 
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
@@ -19,23 +19,9 @@ type HttpHandler struct {
 	dbQueries     *database.Queries
 	store         *store.Store
 	schemaDecoder *schema.Decoder
-	awsService    *aws.AwsService
-	Cancels       []context.CancelFunc
 }
 
 func NewHttpHandler(db *sql.DB) (*HttpHandler, error) {
-	// AWS Service -------------------------
-	awsService, err := aws.New()
-	if err != nil {
-		return nil, err
-	}
-
-	var cancels []context.CancelFunc
-	ctx, cancel := context.WithCancel(context.Background())
-	go awsService.RotateJWKS(ctx)
-
-	cancels = append(cancels, cancel)
-
 	store, err := store.New()
 	if err != nil {
 		return nil, err
@@ -51,8 +37,6 @@ func NewHttpHandler(db *sql.DB) (*HttpHandler, error) {
 		dbQueries:     dbQueries,
 		store:         store,
 		schemaDecoder: decoder,
-		awsService:    awsService,
-		Cancels:       cancels,
 	}, nil
 }
 
@@ -65,12 +49,6 @@ func getUUID() uuid.UUID {
 	}
 
 	return id
-}
-
-func getFormatedDate(t time.Time) string {
-	// BKK is UTC + 7
-	offset := 7 * time.Hour
-	return t.Add(offset).Format("2 Jan 2006")
 }
 
 // helpers

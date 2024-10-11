@@ -4,6 +4,8 @@ server
 migrations
 tmp/*
 
+libsql-*
+
 style.css
 
 *_templ.go
