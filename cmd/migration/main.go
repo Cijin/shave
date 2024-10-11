@@ -1,7 +1,8 @@
 package main
 
 import (
-	"context"
+	"database/sql"
+	"embed"
 	"log"
 	"os"
 
@@ -11,31 +12,31 @@ import (
 
 const command = "up"
 
+//go:embed migrations/*.sql
+var embedMigrations embed.FS
+
 func main() {
-	dbURL := os.Getenv("DB_URL")
-	if dbURL == "" {
-		log.Fatal("DB_URL not set, unable to run migrations")
-		return
+	sqlURL := os.Getenv("SQL_URL")
+	if sqlURL == "" {
+		log.Fatal("No SQL_URL set in .env")
 	}
 
-	migrationDir := os.Getenv("MIGRATION_DIR")
-	if migrationDir == "" {
-		log.Fatal("MIGRATION_DIR not set, unable to run migrations")
-		return
-	}
-
-	db, err := goose.OpenDBWithDriver("turso", dbURL)
+	db, err := sql.Open("libsql", sqlURL)
 	if err != nil {
-		log.Fatalf("goose: failed to open DB: %v\n", err)
+		log.Fatal("error opening database: ", err)
 	}
-
 	defer func() {
 		if err := db.Close(); err != nil {
 			log.Fatalf("goose: failed to close DB: %v\n", err)
 		}
 	}()
 
-	if err := goose.RunContext(context.Background(), command, db, migrationDir); err != nil {
-		log.Fatalf("goose %v: %v", command, err)
+	goose.SetBaseFS(embedMigrations)
+	if err := goose.SetDialect("sqlite"); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := goose.Up(db, "sqlc/schema"); err != nil {
+		log.Fatal(err)
 	}
 }
