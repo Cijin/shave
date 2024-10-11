@@ -1,7 +1,6 @@
 .env
 bin
 server
-migrations
 tmp/*
 
 libsql-*
