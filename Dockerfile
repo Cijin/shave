@@ -23,8 +23,5 @@ WORKDIR /app
 COPY --from=tailwind-builder /app/public ./public
 COPY --from=go-builder /app/server .
 COPY --from=go-builder /app/migration .
-COPY --from=go-builder /app/scripts/start.sh .
 
-RUN chmod +x start.sh
-
-ENTRYPOINT ["start.sh"]
+CMD ["sh", "-c", "./migration && ./server"]
