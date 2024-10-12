@@ -22,10 +22,15 @@ templ Navigation(user data.SessionUser) {
       </ul>
     </div>
     <div class="uk-navbar-right">
-      <div class="uk-navbar-item">
+      <div class="uk-navbar-item space-x-2">
         if user.Email == "" {
-        <a class="uk-button uk-button-default" href="/login" aria-label="Login">Login</a>
-        <a class="uk-button uk-button-secondary" href="/register" aria-label="Login">Create account</a>
+        <p class="uk-text-meta">Login</p>
+        <a class="flex flex-shrink-0 items-center cursor-pointer" href="/" aria-label="Back to Home">
+          <img class="h-8 w-auto" src="/assets/google-icon.svg" />
+        </a>
+        <a class="flex flex-shrink-0 items-center cursor-pointer" href="/" aria-label="Back to Home">
+          <img class="h-8 w-auto" src="/assets/github-icon.svg" />
+        </a>
         } else {
         @UserMenu(user)
         }
