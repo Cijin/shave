@@ -24,4 +24,4 @@ COPY --from=tailwind-builder /app/public ./public
 COPY --from=go-builder /app/server .
 COPY --from=go-builder /app/migration .
 
-CMD ["sh", "-c", "./migration && ./server"]
+ENTRYPOINT ["/bin/sh", "-c", "./migration && ./server"]

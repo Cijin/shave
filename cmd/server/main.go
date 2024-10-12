@@ -26,6 +26,7 @@ import (
 const (
 	defaultPort  = "8080"
 	syncInterval = time.Minute
+	tmpDir       = "tmp"
 )
 
 func main() {
@@ -39,7 +40,16 @@ func main() {
 		slog.Error("DB_NAME cannot be empty", "ENV_ERROR", "missing db name")
 	}
 
-	dir, err := os.MkdirTemp("", "libsql-*")
+	// in production, fly will mount a volume in
+	// the current directory: /app/data, check fly.toml
+	// /app is the workdir in the final docker image
+	wd, err := os.Getwd()
+	if err != nil {
+		slog.Error("Unable to get working directory", "OS_ERROR", err)
+	}
+	tempDirPath := filepath.Join(wd, tmpDir)
+
+	dir, err := os.MkdirTemp(tempDirPath, "libsql-*")
 	if err != nil {
 		slog.Error("Error creating temporary directory", "OS_ERROR", err)
 		os.Exit(1)

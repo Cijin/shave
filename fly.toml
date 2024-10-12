@@ -1,8 +1,3 @@
-# fly.toml app configuration file generated for shave on 2024-10-11T15:02:51+07:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
 app = 'shave'
 primary_region = 'sin'
 
@@ -23,3 +18,7 @@ primary_region = 'sin'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
+
+[mounts]
+  source="sqlite_data"
+  destination="/app/tmp"
