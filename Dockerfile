@@ -1,11 +1,11 @@
-FROM node:18 AS tailwind-builder
+FROM node:20 AS tailwind-builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
 RUN npm run build-css
 
-FROM golang:1.23 AS go-builder
+FROM golang:1.23.2-bookworm AS go-builder
 WORKDIR /app
 COPY . .
 
@@ -23,7 +23,8 @@ WORKDIR /app
 COPY --from=tailwind-builder /app/public ./public
 COPY --from=go-builder /app/server .
 COPY --from=go-builder /app/migration .
+COPY --from=go-builder /app/scripts/start.sh .
 
-EXPOSE 8080
+RUN chmod +x start.sh
 
-ENTRYPOINT ["/bin/sh", "-c", "./migration && ./server"]
+ENTRYPOINT ["start.sh"]

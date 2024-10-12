@@ -10,18 +10,16 @@ import (
 	_ "github.com/tursodatabase/go-libsql"
 )
 
-const command = "up"
-
 //go:embed migrations/*.sql
 var embedMigrations embed.FS
 
 func main() {
-	sqlURL := os.Getenv("SQL_URL")
-	if sqlURL == "" {
+	dbURL := os.Getenv("SQL_URL")
+	if dbURL == "" {
 		log.Fatal("No SQL_URL set in env")
 	}
 
-	db, err := sql.Open("libsql", sqlURL)
+	db, err := sql.Open("libsql", dbURL)
 	if err != nil {
 		log.Fatal("error opening database: ", err)
 	}
@@ -39,4 +37,6 @@ func main() {
 	if err := goose.Up(db, "migrations"); err != nil {
 		log.Fatal(err)
 	}
+
+	log.Println("Migration run is complete")
 }
