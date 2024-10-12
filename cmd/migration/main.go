@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/pressly/goose/v3"
 	_ "github.com/tursodatabase/go-libsql"
 )
@@ -31,12 +32,10 @@ func main() {
 
 	goose.SetBaseFS(embedMigrations)
 	if err := goose.SetDialect("sqlite"); err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to set goose dialect:", err)
 	}
 
 	if err := goose.Up(db, "migrations"); err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to run migrations:", err)
 	}
-
-	log.Println("Migration run is complete")
 }

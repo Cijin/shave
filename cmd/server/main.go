@@ -41,7 +41,7 @@ func main() {
 	}
 
 	// in production, fly will mount a volume in
-	// the current directory: /app/data, check fly.toml
+	// the current directory: /app/tmp, check fly.toml
 	// /app is the workdir in the final docker image
 	wd, err := os.Getwd()
 	if err != nil {
@@ -73,18 +73,18 @@ func main() {
 	db := sql.OpenDB(connector)
 	defer db.Close()
 
+	// HttpHandler -------------------------
+	h, err := handlers.NewHttpHandler(db)
+	if err != nil {
+		slog.Error("Error setting up handler.", "Error", err)
+		return
+	}
+
 	// Port -------------------------
 	port := os.Getenv("PORT")
 	if port == "" {
 		slog.Info("Port not set, using defaults")
 		port = defaultPort
-	}
-
-	// Register handler
-	h, err := handlers.NewHttpHandler(db)
-	if err != nil {
-		slog.Error("Error setting up handler.", "Error", err)
-		return
 	}
 
 	// Router -------------------------
