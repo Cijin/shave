@@ -11,7 +11,10 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-const issuerURL = "https://accounts.google.com/"
+const (
+	issuerURL    = "https://accounts.google.com"
+	providerName = "google"
+)
 
 type Provider struct {
 	config       oauth2.Config
@@ -19,7 +22,7 @@ type Provider struct {
 	name         string
 }
 
-func New(name string) (*Provider, error) {
+func New() (*Provider, error) {
 	clientId := os.Getenv("GOOGLE_CLIENT_ID")
 	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
 	callbackDomain := os.Getenv("CALLBACK_DOMAIN")
@@ -36,12 +39,12 @@ func New(name string) (*Provider, error) {
 	conf := oauth2.Config{
 		ClientID:     clientId,
 		ClientSecret: clientSecret,
-		RedirectURL:  fmt.Sprintf("%s/auth/%s/callback", callbackDomain, name),
+		RedirectURL:  fmt.Sprintf("%s/auth/%s/callback", callbackDomain, providerName),
 		Endpoint:     google.Endpoint,
 		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
 	}
 
-	return &Provider{name: "google", config: conf, oidcProvider: oidcProvider}, nil
+	return &Provider{name: providerName, config: conf, oidcProvider: oidcProvider}, nil
 }
 
 func (p *Provider) GetName() string {
@@ -56,7 +59,7 @@ func (p *Provider) ExchangeCode(ctx context.Context, code string) (*oauth2.Token
 	return p.config.Exchange(ctx, code)
 }
 
-func (p *Provider) VerifyIdIssuer(ctx context.Context, token *oauth2.Token) (*oidc.IDToken, error) {
+func (p *Provider) VerifyIssuer(ctx context.Context, token *oauth2.Token) (*oidc.IDToken, error) {
 	rawIDToken, ok := token.Extra("id_token").(string)
 	if !ok {
 		return nil, errors.New("no id_token field in oauth2 token")

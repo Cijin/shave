@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-const sessionName = "paper-chase"
+const sessionName = "shave"
 
 // required to store user id of type UUID into
 // session cookie
@@ -32,7 +32,7 @@ func New() (*Store, error) {
 	cookieStore.Options.Path = "/"
 	cookieStore.Options.Secure = true
 	cookieStore.Options.HttpOnly = true
-	cookieStore.Options.SameSite = http.SameSiteStrictMode
+	cookieStore.Options.SameSite = http.SameSiteLaxMode
 
 	return &Store{cookieStore}, nil
 }

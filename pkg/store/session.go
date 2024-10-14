@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	EmailKey       = "email"
-	RememberMeKey  = "remember_me"
-	AccessTokenKey = "access_token"
-	UserIdKey      = "user_id"
+	emailKey       = "email"
+	rememberMeKey  = "remember_me"
+	accessTokenKey = "access_token"
+	userIdKey      = "user_id"
 )
 
 // this error does not warrant throwing an internal error, simply
@@ -29,7 +29,7 @@ func (s *Store) GetSession(r *http.Request) (data.Session, error) {
 		return sessionData, err
 	}
 
-	accessToken, ok := session.Values[AccessTokenKey].(string)
+	accessToken, ok := session.Values[accessTokenKey].(string)
 	if !ok {
 		return sessionData, errors.New("access token is malformed")
 	}
@@ -47,17 +47,17 @@ func (s *Store) GetSessionUser(r *http.Request) (data.SessionUser, error) {
 		return sessionUser, err
 	}
 
-	email, ok := session.Values[EmailKey].(string)
+	email, ok := session.Values[emailKey].(string)
 	if !ok {
 		return sessionUser, errors.New("email is malformed")
 	}
 
-	userId, ok := session.Values[UserIdKey].(uuid.UUID)
+	userId, ok := session.Values[userIdKey].(uuid.UUID)
 	if !ok {
 		return sessionUser, errors.New("UserId is malformed")
 	}
 
-	rememberMe, ok := session.Values[RememberMeKey].(bool)
+	rememberMe, ok := session.Values[rememberMeKey].(bool)
 	if !ok {
 		slog.Info("Remember me field is malformed, defaulting to false")
 
@@ -73,7 +73,7 @@ func (s *Store) GetSessionUser(r *http.Request) (data.SessionUser, error) {
 
 func (s *Store) SaveSession(w http.ResponseWriter, r *http.Request, sessionData data.Session) error {
 	storeData := map[string]interface{}{
-		AccessTokenKey: sessionData.AccessToken,
+		accessTokenKey: sessionData.AccessToken,
 	}
 
 	return s.save(w, r, storeData)
@@ -81,9 +81,9 @@ func (s *Store) SaveSession(w http.ResponseWriter, r *http.Request, sessionData 
 
 func (s *Store) SaveSessionUser(w http.ResponseWriter, r *http.Request, sessionUser data.SessionUser) error {
 	storeData := map[string]interface{}{
-		EmailKey:      sessionUser.Email,
-		RememberMeKey: sessionUser.RememberMe,
-		UserIdKey:     sessionUser.UserId,
+		emailKey:      sessionUser.Email,
+		rememberMeKey: sessionUser.RememberMe,
+		userIdKey:     sessionUser.UserId,
 	}
 
 	return s.save(w, r, storeData)

@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"shave/internal/database"
+	"shave/pkg/authenticator"
+	"shave/pkg/authenticator/providers/google"
 	"shave/pkg/store"
 	"shave/views/internalError"
 
@@ -19,6 +21,7 @@ type HttpHandler struct {
 	dbQueries     *database.Queries
 	store         *store.Store
 	schemaDecoder *schema.Decoder
+	authenticator *authenticator.Authenticator
 }
 
 func NewHttpHandler(db *sql.DB) (*HttpHandler, error) {
@@ -26,6 +29,13 @@ func NewHttpHandler(db *sql.DB) (*HttpHandler, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	googleProvider, err := google.New()
+	if err != nil {
+		return nil, err
+	}
+
+	authenticator := authenticator.New(googleProvider)
 
 	decoder := schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)
@@ -37,6 +47,7 @@ func NewHttpHandler(db *sql.DB) (*HttpHandler, error) {
 		dbQueries:     dbQueries,
 		store:         store,
 		schemaDecoder: decoder,
+		authenticator: authenticator,
 	}, nil
 }
 
