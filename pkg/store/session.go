@@ -1,7 +1,10 @@
 package store
 
 import (
+	"bytes"
+	"compress/gzip"
 	"errors"
+	"io"
 	"net/http"
 
 	"shave/pkg/data"
@@ -28,12 +31,23 @@ func (s *Store) GetSession(r *http.Request) (data.Session, error) {
 		return sessionData, err
 	}
 
-	accessToken, ok := session.Values[accessTokenKey].(string)
+	compressedAccessToken, ok := session.Values[accessTokenKey].([]byte)
 	if !ok {
 		return sessionData, errors.New("access token is malformed")
 	}
 
-	sessionData.AccessToken = accessToken
+	rData := bytes.NewReader(compressedAccessToken)
+	zr, err := gzip.NewReader(rData)
+	if err != nil {
+		return sessionData, err
+	}
+
+	accessToken, err := io.ReadAll(zr)
+	if err != nil {
+		return sessionData, err
+	}
+
+	sessionData.AccessToken = string(accessToken)
 
 	return sessionData, nil
 }
@@ -87,8 +101,23 @@ func (s *Store) GetSessionUser(r *http.Request) (data.SessionUser, error) {
 }
 
 func (s *Store) SaveSession(w http.ResponseWriter, r *http.Request, sessionData data.Session) error {
+	var b bytes.Buffer
+	zw := gzip.NewWriter(&b)
+	zw.Name = "access-token"
+	if _, err := zw.Write([]byte(sessionData.AccessToken)); err != nil {
+		return err
+	}
+
+	if err := zw.Flush(); err != nil {
+		return err
+	}
+
+	if err := zw.Close(); err != nil {
+		return err
+	}
+
 	storeData := map[string]interface{}{
-		accessTokenKey: sessionData.AccessToken,
+		accessTokenKey: b,
 		expiresAtKey:   sessionData.ExpiresAt,
 	}
 

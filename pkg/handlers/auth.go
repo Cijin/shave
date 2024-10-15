@@ -53,6 +53,8 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// create user if not exists
+
 	// save session
 	// gzip??
 	// save session to db

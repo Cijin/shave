@@ -7,7 +7,6 @@ import (
 
 	"shave/pkg/data"
 
-	"github.com/coreos/go-oidc"
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/oauth2"
 )
