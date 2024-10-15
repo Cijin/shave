@@ -8,9 +8,23 @@ import (
 	"time"
 )
 
+type Session struct {
+	ID           interface{}
+	UserID       interface{}
+	Email        string
+	RefreshToken string
+	AccessToken  string
+	Provider     string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+}
+
 type User struct {
-	ID        string
-	HashedIp  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID            interface{}
+	Email         string
+	Sub           string
+	Name          string
+	EmailVerified bool
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }

@@ -1,0 +1,15 @@
+-- +goose Up
+CREATE TABLE IF NOT EXISTS sessions (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  refresh_token TEXT UNIQUE NOT NULL,
+  access_token TEXT UNIQUE NOT NULL,
+  provider TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- +goose Down
+DROP TABLE IF EXISTS sessions;

@@ -12,32 +12,61 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-  id, hashed_ip, created_at, updated_at 
+  id, email, sub, name, email_verified, created_at, updated_at
+) VALUES (
+  ?, ?, ?, ?, ?, ?, ?
 )
-VALUES (
-  ?, ?, ?, ?
-)
-RETURNING id, hashed_ip, created_at, updated_at
+RETURNING id, email, sub, name, email_verified, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	ID        string
-	HashedIp  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID            interface{}
+	Email         string
+	Sub           string
+	Name          string
+	EmailVerified bool
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, createUser,
 		arg.ID,
-		arg.HashedIp,
+		arg.Email,
+		arg.Sub,
+		arg.Name,
+		arg.EmailVerified,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.HashedIp,
+		&i.Email,
+		&i.Sub,
+		&i.Name,
+		&i.EmailVerified,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUser = `-- name: GetUser :one
+SELECT id, email, sub, name, email_verified, created_at, updated_at FROM users
+WHERE email=? 
+LIMIT 1
+`
+
+func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Sub,
+		&i.Name,
+		&i.EmailVerified,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
