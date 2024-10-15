@@ -1,55 +1,58 @@
 package layouts
 
 import (
-"shave/internal/version"
-"shave/views/components"
+	"shave/internal/version"
+	"shave/views/components"
 )
 
 templ Index() {
-<!DOCTYPE html>
-<html x-data="{ 
+	<!DOCTYPE html>
+	<html
+		x-data="{ 
     theme: localStorage.getItem('theme') || 
            (window.matchMedia ? 
                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') 
                : 'light')
-}" :class="theme" class="uk-theme-green" lang="en" x-init="$watch('theme', val => localStorage.setItem('theme', val))">
-
-<head>
-  <title>shave</title>
-  <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="version" content={ version.Version } />
-  <!-- Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap"
-    rel="stylesheet" />
-  <!-- Css -->
-  <link href="/css/base.css" rel="stylesheet" />
-  <link href="/css/style.css" rel="stylesheet" />
-  <!-- Js -->
-  <script src="/js/htmx.min.js"></script>
-  <script src="/js/response-targets.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <!-- Ui Kit -->
-  <script src="https://unpkg.com/franken-ui@1.1.0/dist/js/core.iife.js" type="module"></script>
-  <script src="https://unpkg.com/franken-ui@1.1.0/dist/js/icon.iife.js" type="module"></script>
-</head>
-
-<body hx-ext="response-targets" class="flex flex-col min-h-screen antialiased uk-background-default text-foreground">
-  { children... }
-</body>
-
-</html>
+}"
+		:class="theme"
+		class="uk-theme-green"
+		lang="en"
+		x-init="$watch('theme', val => localStorage.setItem('theme', val))"
+	>
+		<head>
+			<title>shave</title>
+			<link rel="icon" type="image/x-icon" href="/favicon/favicon.ico"/>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="version" content={ version.Version }/>
+			<!-- Font -->
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link
+				href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap"
+				rel="stylesheet"
+			/>
+			<!-- Css -->
+			<link href="/css/base.css" rel="stylesheet"/>
+			<link href="/css/style.css" rel="stylesheet"/>
+			<!-- Js -->
+			<script src="/js/htmx.min.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+			<!-- Ui Kit -->
+			<script src="https://unpkg.com/franken-ui@1.1.0/dist/js/core.iife.js" type="module"></script>
+			<script src="https://unpkg.com/franken-ui@1.1.0/dist/js/icon.iife.js" type="module"></script>
+		</head>
+		<body hx-ext="response-targets" class="flex flex-col min-h-screen antialiased uk-background-default text-foreground">
+			{ children... }
+		</body>
+	</html>
 }
 
 templ Base() {
-@Index() {
-<main class="grow flex flex-col">
-  { children... }
-</main>
-@components.Footer()
-}
+	@Index() {
+		<main class="grow flex flex-col">
+			{ children... }
+		</main>
+		@components.Footer()
+	}
 }

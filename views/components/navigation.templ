@@ -24,10 +24,10 @@ templ Navigation(user data.SessionUser) {
 			<div class="uk-navbar-right">
 				<div class="uk-navbar-item space-x-2">
 					if user.Email == "" {
-						<button hx-get="/login/google" class="uk-button uk-button-default" aria-label="login with google">
+						<a href="/login/google" class="uk-button uk-button-default" aria-label="login with google">
 							<img width="20" height="20" src="/assets/google-icon.svg" class="uk-margin-small-right uk-preserve" uk-svg/>
 							Login with Google
-						</button>
+						</a>
 					} else {
 						@UserMenu(user)
 					}

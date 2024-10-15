@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
@@ -12,10 +13,9 @@ import (
 
 const sessionName = "shave"
 
-// required to store user id of type UUID into
-// session cookie
 func init() {
 	gob.Register(uuid.UUID{})
+	gob.Register(time.Time{})
 }
 
 type Store struct {

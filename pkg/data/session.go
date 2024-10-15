@@ -3,12 +3,14 @@ package data
 import (
 	"context"
 	"net/mail"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 type Session struct {
 	AccessToken string
+	ExpiresAt   time.Time
 }
 
 func (s Session) Valid(ctx context.Context) Problems {
@@ -22,9 +24,12 @@ func (s Session) Valid(ctx context.Context) Problems {
 }
 
 type SessionUser struct {
-	UserId     uuid.UUID
-	Email      string
-	RememberMe bool
+	UserId        uuid.UUID
+	Sub           string
+	AvatarURL     string
+	EmailVerified bool
+	Name          string
+	Email         string
 }
 
 func (su SessionUser) Valid(ctx context.Context) Problems {
@@ -40,19 +45,5 @@ func (su SessionUser) Valid(ctx context.Context) Problems {
 
 type SessionVerifier struct {
 	Verifier string
-	State    string
-}
-
-func (sv SessionVerifier) Valid(ctx context.Context) Problems {
-	problems := NewProblems()
-
-	if sv.State == "" {
-		problems.Add("state", "State is empty")
-	}
-
-	if sv.State == "" {
-		problems.Add("state", "State is empty")
-	}
-
-	return problems
+	State    uuid.UUID
 }

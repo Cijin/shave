@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"shave/pkg/data"
+
 	"github.com/coreos/go-oidc"
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/oauth2"
@@ -34,39 +36,45 @@ func (a *Authenticator) getProvider(r *http.Request) (Provider, error) {
 	return provider, nil
 }
 
-func (a *Authenticator) AuthCodeURL(state string, r *http.Request) (string, error) {
+func (a *Authenticator) AuthCodeURL(state string, r *http.Request, opts ...oauth2.AuthCodeOption) (string, error) {
 	provider, err := a.getProvider(r)
 	if err != nil {
 		return "", err
 	}
 
-	return provider.GetAuthCodeURL(state), nil
+	return provider.GetAuthCodeURL(state, opts...), nil
 }
 
-func (a *Authenticator) Authenticate(r *http.Request) (*oauth2.Token, *oidc.IDToken, error) {
+func (a *Authenticator) Authenticate(r *http.Request, opts ...oauth2.AuthCodeOption) (*oauth2.Token, data.SessionUser, error) {
+	var user data.SessionUser
 	provider, err := a.getProvider(r)
 	if err != nil {
-		return nil, nil, err
+		return nil, user, err
 	}
 
-	code := chi.URLParam(r, "code")
+	code := r.URL.Query().Get("code")
 	if code == "" {
-		return nil, nil, errors.New("code is empty")
+		return nil, user, errors.New("code is empty")
 	}
 
-	token, err := provider.ExchangeCode(r.Context(), code)
+	token, err := provider.ExchangeCode(r.Context(), code, opts...)
 	if err != nil {
-		return nil, nil, err
+		return nil, user, err
 	}
 
 	if !token.Valid() {
-		return nil, nil, errors.New("token recieved is invalid")
+		return nil, user, errors.New("token recieved is invalid")
 	}
 
 	idToken, err := provider.VerifyIssuer(r.Context(), token)
 	if err != nil {
-		return nil, nil, err
+		return nil, user, err
 	}
 
-	return token, idToken, nil
+	user, err = provider.GetUserInfo(idToken)
+	if err != nil {
+		return nil, user, err
+	}
+
+	return token, user, nil
 }

@@ -2,7 +2,6 @@ package store
 
 import (
 	"errors"
-	"log/slog"
 	"net/http"
 
 	"shave/pkg/data"
@@ -11,15 +10,15 @@ import (
 )
 
 const (
-	emailKey       = "email"
-	rememberMeKey  = "remember_me"
-	accessTokenKey = "access_token"
-	userIdKey      = "user_id"
+	emailKey         = "email"
+	subKey           = "sub"
+	emailVerifiedKey = "email_verified"
+	nameKey          = "name"
+	avatarURLKey     = "avatar_url"
+	userIdKey        = "user_id"
+	accessTokenKey   = "access_token"
+	expiresAtKey     = "expires_at"
 )
-
-// this error does not warrant throwing an internal error, simply
-// don't renew the token once expired and log the error
-var ErrRememberMe = errors.New("remember me flag is malformed")
 
 func (s *Store) GetSession(r *http.Request) (data.Session, error) {
 	sessionData := data.Session{}
@@ -52,20 +51,36 @@ func (s *Store) GetSessionUser(r *http.Request) (data.SessionUser, error) {
 		return sessionUser, errors.New("email is malformed")
 	}
 
+	name, ok := session.Values[nameKey].(string)
+	if !ok {
+		return sessionUser, errors.New("name is malformed")
+	}
+
+	avatarURL, ok := session.Values[avatarURLKey].(string)
+	if !ok {
+		return sessionUser, errors.New("avatar URL is malformed")
+	}
+
+	emailVerified, ok := session.Values[emailVerifiedKey].(bool)
+	if !ok {
+		return sessionUser, errors.New("email verified is malformed")
+	}
+
+	sub, ok := session.Values[subKey].(string)
+	if !ok {
+		return sessionUser, errors.New("sub is malformed")
+	}
+
 	userId, ok := session.Values[userIdKey].(uuid.UUID)
 	if !ok {
 		return sessionUser, errors.New("UserId is malformed")
 	}
 
-	rememberMe, ok := session.Values[rememberMeKey].(bool)
-	if !ok {
-		slog.Info("Remember me field is malformed, defaulting to false")
-
-		sessionUser.RememberMe = false
-	}
-
 	sessionUser.Email = email
-	sessionUser.RememberMe = rememberMe
+	sessionUser.AvatarURL = avatarURL
+	sessionUser.Name = name
+	sessionUser.Sub = sub
+	sessionUser.EmailVerified = emailVerified
 	sessionUser.UserId = userId
 
 	return sessionUser, nil
@@ -74,6 +89,7 @@ func (s *Store) GetSessionUser(r *http.Request) (data.SessionUser, error) {
 func (s *Store) SaveSession(w http.ResponseWriter, r *http.Request, sessionData data.Session) error {
 	storeData := map[string]interface{}{
 		accessTokenKey: sessionData.AccessToken,
+		expiresAtKey:   sessionData.ExpiresAt,
 	}
 
 	return s.save(w, r, storeData)
@@ -81,9 +97,12 @@ func (s *Store) SaveSession(w http.ResponseWriter, r *http.Request, sessionData 
 
 func (s *Store) SaveSessionUser(w http.ResponseWriter, r *http.Request, sessionUser data.SessionUser) error {
 	storeData := map[string]interface{}{
-		emailKey:      sessionUser.Email,
-		rememberMeKey: sessionUser.RememberMe,
-		userIdKey:     sessionUser.UserId,
+		emailKey:         sessionUser.Email,
+		subKey:           sessionUser.Sub,
+		userIdKey:        sessionUser.UserId,
+		emailVerifiedKey: sessionUser.EmailVerified,
+		avatarURLKey:     sessionUser.AvatarURL,
+		nameKey:          sessionUser.Name,
 	}
 
 	return s.save(w, r, storeData)

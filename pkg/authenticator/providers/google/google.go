@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 
+	"shave/pkg/data"
+
 	"github.com/coreos/go-oidc"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -51,12 +53,12 @@ func (p *Provider) GetName() string {
 	return p.name
 }
 
-func (p *Provider) GetAuthCodeURL(state string) string {
-	return p.config.AuthCodeURL(state)
+func (p *Provider) GetAuthCodeURL(state string, opts ...oauth2.AuthCodeOption) string {
+	return p.config.AuthCodeURL(state, opts...)
 }
 
-func (p *Provider) ExchangeCode(ctx context.Context, code string) (*oauth2.Token, error) {
-	return p.config.Exchange(ctx, code)
+func (p *Provider) ExchangeCode(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error) {
+	return p.config.Exchange(ctx, code, opts...)
 }
 
 func (p *Provider) VerifyIssuer(ctx context.Context, token *oauth2.Token) (*oidc.IDToken, error) {
@@ -70,4 +72,46 @@ func (p *Provider) VerifyIssuer(ctx context.Context, token *oauth2.Token) (*oidc
 	}
 
 	return p.oidcProvider.Verifier(oidcConfig).Verify(ctx, rawIDToken)
+}
+
+func (p *Provider) GetUserInfo(idToken *oidc.IDToken) (data.SessionUser, error) {
+	var user data.SessionUser
+	var profile map[string]interface{}
+
+	if err := idToken.Claims(&profile); err != nil {
+		return user, err
+	}
+
+	name, ok := profile["name"].(string)
+	if !ok {
+		return user, errors.New("idtoken has invalid name type")
+	}
+
+	avatarURL, ok := profile["picture"].(string)
+	if !ok {
+		return user, errors.New("idtoken has avatar url of invalid type")
+	}
+
+	email, ok := profile["email"].(string)
+	if !ok {
+		return user, errors.New("idtoken has invalid email")
+	}
+
+	emailVerified, ok := profile["email_verified"].(bool)
+	if !ok {
+		return user, errors.New("idtoken has invalid email verifiation value")
+	}
+
+	sub, ok := profile["sub"].(string)
+	if !ok {
+		return user, errors.New("idtoken has invalid sub value")
+	}
+
+	user.Name = name
+	user.AvatarURL = avatarURL
+	user.Email = email
+	user.EmailVerified = emailVerified
+	user.Sub = sub
+
+	return user, nil
 }

@@ -4,36 +4,51 @@ import (
 	"errors"
 	"net/http"
 
+	"shave/pkg/data"
+
 	"github.com/google/uuid"
+	"golang.org/x/oauth2"
 )
 
-const stateKey = "state"
+const (
+	stateKey    = "state"
+	verifierKey = "verifier"
+)
 
-func (s *Store) GetState(r *http.Request) (string, error) {
+func (s *Store) GetSessionVerfier(r *http.Request) (data.SessionVerifier, error) {
+	var sessionData data.SessionVerifier
+
 	session, err := s.cookieStore.Get(r, sessionName)
 	if err != nil {
-		return "", err
+		return sessionData, err
 	}
 
-	state, ok := session.Values[stateKey].(string)
+	state, ok := session.Values[stateKey].(uuid.UUID)
 	if !ok {
-		return "", errors.New("state token is malformed")
+		return sessionData, errors.New("state is malformed")
 	}
 
-	return state, nil
+	verifier, ok := session.Values[verifierKey].(string)
+	if !ok {
+		return sessionData, errors.New("verifier is malformed")
+	}
+
+	return data.SessionVerifier{State: state, Verifier: verifier}, nil
 }
 
-func (s *Store) SaveState(w http.ResponseWriter, r *http.Request) (string, error) {
+func (s *Store) SaveSessionVerfier(w http.ResponseWriter, r *http.Request) (data.SessionVerifier, error) {
 	state := uuid.New()
+	verifier := oauth2.GenerateVerifier()
 
 	stateData := map[string]interface{}{
-		stateKey: state,
+		stateKey:    state,
+		verifierKey: verifier,
 	}
 
 	err := s.save(w, r, stateData)
 	if err != nil {
-		return "", err
+		return data.SessionVerifier{}, err
 	}
 
-	return state.String(), nil
+	return data.SessionVerifier{State: state, Verifier: verifier}, nil
 }
