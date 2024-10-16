@@ -16,6 +16,11 @@ INSERT INTO sessions (
 ) VALUES (
   ?, ?, ?, ?, ?, ?, ?, ?
 )
+ON CONFLICT (email)
+DO UPDATE SET 
+  refresh_token = EXCLUDED.refresh_token, 
+  access_token = EXCLUDED.access_token, 
+  updated_at = EXCLUDED.updated_at
 RETURNING id, user_id, email, refresh_token, access_token, provider, created_at, updated_at
 `
 

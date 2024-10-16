@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"time"
 
 	"shave/pkg/data"
 
@@ -20,7 +21,8 @@ const (
 	avatarURLKey     = "avatar_url"
 	userIdKey        = "user_id"
 	accessTokenKey   = "access_token"
-	expiresAtKey     = "expires_at"
+	providerKey      = "provider"
+	expiryKey        = "expiry"
 )
 
 func (s *Store) GetSession(r *http.Request) (data.Session, error) {
@@ -47,7 +49,19 @@ func (s *Store) GetSession(r *http.Request) (data.Session, error) {
 		return sessionData, err
 	}
 
+	expiry, ok := session.Values[expiryKey].(time.Time)
+	if !ok {
+		return sessionData, errors.New("expiry is malformed")
+	}
+
+	provider, ok := session.Values[providerKey].(string)
+	if !ok {
+		return sessionData, errors.New("provider is malformed")
+	}
+
 	sessionData.AccessToken = string(accessToken)
+	sessionData.Provider = provider
+	sessionData.Expiry = expiry
 
 	return sessionData, nil
 }
@@ -101,6 +115,10 @@ func (s *Store) GetSessionUser(r *http.Request) (data.SessionUser, error) {
 }
 
 func (s *Store) SaveSession(w http.ResponseWriter, r *http.Request, sessionData data.Session) error {
+	if problems := sessionData.Valid(r.Context()); problems.Any() {
+		return errors.New("session data is invalid")
+	}
+
 	var b bytes.Buffer
 	zw := gzip.NewWriter(&b)
 	zw.Name = "access-token"
@@ -118,13 +136,18 @@ func (s *Store) SaveSession(w http.ResponseWriter, r *http.Request, sessionData 
 
 	storeData := map[string]interface{}{
 		accessTokenKey: b,
-		expiresAtKey:   sessionData.ExpiresAt,
+		providerKey:    sessionData.Provider,
+		expiryKey:      sessionData.Expiry,
 	}
 
 	return s.save(w, r, storeData)
 }
 
 func (s *Store) SaveSessionUser(w http.ResponseWriter, r *http.Request, sessionUser data.SessionUser) error {
+	if problems := sessionUser.Valid(r.Context()); problems.Any() {
+		return errors.New("session user data is invalid")
+	}
+
 	storeData := map[string]interface{}{
 		emailKey:         sessionUser.Email,
 		subKey:           sessionUser.Sub,

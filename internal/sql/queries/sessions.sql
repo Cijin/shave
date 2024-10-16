@@ -4,6 +4,11 @@ INSERT INTO sessions (
 ) VALUES (
   ?, ?, ?, ?, ?, ?, ?, ?
 )
+ON CONFLICT (email)
+DO UPDATE SET 
+  refresh_token = EXCLUDED.refresh_token, 
+  access_token = EXCLUDED.access_token, 
+  updated_at = EXCLUDED.updated_at
 RETURNING *;
 
 -- name: GetSession :one
