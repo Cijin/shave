@@ -9,8 +9,8 @@ import (
 )
 
 type Session struct {
-	ID           interface{}
-	UserID       interface{}
+	ID           string
+	UserID       string
 	Email        string
 	RefreshToken string
 	AccessToken  string
@@ -20,7 +20,7 @@ type Session struct {
 }
 
 type User struct {
-	ID            interface{}
+	ID            string
 	Email         string
 	Sub           string
 	Name          string

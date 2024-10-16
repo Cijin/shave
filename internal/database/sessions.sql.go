@@ -25,8 +25,8 @@ RETURNING id, user_id, email, refresh_token, access_token, provider, created_at,
 `
 
 type CreateSessionParams struct {
-	ID           interface{}
-	UserID       interface{}
+	ID           string
+	UserID       string
 	Email        string
 	Provider     string
 	AccessToken  string

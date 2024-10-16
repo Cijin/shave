@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"shave/pkg/data"
@@ -25,6 +26,35 @@ const (
 	expiryKey        = "expiry"
 )
 
+func (s *Store) SaveSession(w http.ResponseWriter, r *http.Request, sessionData data.Session) error {
+	if problems := sessionData.Valid(r.Context()); problems.Any() {
+		return errors.New(problems.String())
+	}
+
+	var b bytes.Buffer
+	zw := gzip.NewWriter(&b)
+	zw.Name = "access-token"
+	if _, err := zw.Write([]byte(sessionData.AccessToken)); err != nil {
+		return err
+	}
+
+	if err := zw.Flush(); err != nil {
+		return err
+	}
+
+	if err := zw.Close(); err != nil {
+		return err
+	}
+
+	storeData := map[string]interface{}{
+		accessTokenKey: b.String(),
+		providerKey:    sessionData.Provider,
+		expiryKey:      sessionData.Expiry,
+	}
+
+	return s.save(w, r, storeData)
+}
+
 func (s *Store) GetSession(r *http.Request) (data.Session, error) {
 	sessionData := data.Session{}
 
@@ -33,12 +63,12 @@ func (s *Store) GetSession(r *http.Request) (data.Session, error) {
 		return sessionData, err
 	}
 
-	compressedAccessToken, ok := session.Values[accessTokenKey].([]byte)
+	compressedAccessToken, ok := session.Values[accessTokenKey].(string)
 	if !ok {
 		return sessionData, errors.New("access token is malformed")
 	}
 
-	rData := bytes.NewReader(compressedAccessToken)
+	rData := strings.NewReader(compressedAccessToken)
 	zr, err := gzip.NewReader(rData)
 	if err != nil {
 		return sessionData, err
@@ -64,6 +94,23 @@ func (s *Store) GetSession(r *http.Request) (data.Session, error) {
 	sessionData.Expiry = expiry
 
 	return sessionData, nil
+}
+
+func (s *Store) SaveSessionUser(w http.ResponseWriter, r *http.Request, sessionUser data.SessionUser) error {
+	if problems := sessionUser.Valid(r.Context()); problems.Any() {
+		return errors.New(problems.String())
+	}
+
+	storeData := map[string]interface{}{
+		emailKey:         sessionUser.Email,
+		subKey:           sessionUser.Sub,
+		userIdKey:        sessionUser.UserId,
+		emailVerifiedKey: sessionUser.EmailVerified,
+		avatarURLKey:     sessionUser.AvatarURL,
+		nameKey:          sessionUser.Name,
+	}
+
+	return s.save(w, r, storeData)
 }
 
 func (s *Store) GetSessionUser(r *http.Request) (data.SessionUser, error) {
@@ -112,50 +159,4 @@ func (s *Store) GetSessionUser(r *http.Request) (data.SessionUser, error) {
 	sessionUser.UserId = userId
 
 	return sessionUser, nil
-}
-
-func (s *Store) SaveSession(w http.ResponseWriter, r *http.Request, sessionData data.Session) error {
-	if problems := sessionData.Valid(r.Context()); problems.Any() {
-		return errors.New("session data is invalid")
-	}
-
-	var b bytes.Buffer
-	zw := gzip.NewWriter(&b)
-	zw.Name = "access-token"
-	if _, err := zw.Write([]byte(sessionData.AccessToken)); err != nil {
-		return err
-	}
-
-	if err := zw.Flush(); err != nil {
-		return err
-	}
-
-	if err := zw.Close(); err != nil {
-		return err
-	}
-
-	storeData := map[string]interface{}{
-		accessTokenKey: b,
-		providerKey:    sessionData.Provider,
-		expiryKey:      sessionData.Expiry,
-	}
-
-	return s.save(w, r, storeData)
-}
-
-func (s *Store) SaveSessionUser(w http.ResponseWriter, r *http.Request, sessionUser data.SessionUser) error {
-	if problems := sessionUser.Valid(r.Context()); problems.Any() {
-		return errors.New("session user data is invalid")
-	}
-
-	storeData := map[string]interface{}{
-		emailKey:         sessionUser.Email,
-		subKey:           sessionUser.Sub,
-		userIdKey:        sessionUser.UserId,
-		emailVerifiedKey: sessionUser.EmailVerified,
-		avatarURLKey:     sessionUser.AvatarURL,
-		nameKey:          sessionUser.Name,
-	}
-
-	return s.save(w, r, storeData)
 }

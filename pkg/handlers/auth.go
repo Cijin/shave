@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"slices"
 	"time"
 
 	"shave/internal/database"
 	"shave/pkg/data"
+	"shave/views/home"
 	"shave/views/unauthorized"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 )
 
@@ -37,6 +40,12 @@ func (h *HttpHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
+	if !slices.Contains(data.SupportedProviders, provider) {
+		slog.Error("Unrecognized provider", "ERROR", fmt.Errorf("unrecognized provider '%s'", provider))
+
+		renderComponent(w, r, unauthorized.Index("Login failed"))
+		return
+	}
 
 	sessionVerifier, err := h.store.GetSessionVerfier(r)
 	if err != nil {
@@ -65,7 +74,7 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			createUserParams := database.CreateUserParams{
-				ID:            getUUID(),
+				ID:            getUUID().String(),
 				Email:         sessionUser.Email,
 				Sub:           sessionUser.Sub,
 				Name:          sessionUser.Name,
@@ -81,16 +90,17 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 				InternalError(w, r)
 				return
 			}
-		}
-	} else {
-		slog.Error("Unable to get user", "DB_ERROR", err)
+		} else {
+			slog.Error("Unable to get user", "DB_ERROR", err)
 
-		InternalError(w, r)
-		return
+			InternalError(w, r)
+			return
+		}
 	}
+	sessionUser.UserId, _ = uuid.Parse(user.ID)
 
 	createSessionParams := database.CreateSessionParams{
-		ID:           getUUID(),
+		ID:           getUUID().String(),
 		UserID:       user.ID,
 		Email:        sessionUser.Email,
 		Provider:     provider,
@@ -129,5 +139,5 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(token, sessionUser)
+	renderComponent(w, r, home.SessionedHome(sessionUser))
 }

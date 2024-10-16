@@ -1,92 +1,91 @@
 package components
 
 import (
-	"fmt"
-	"shave/pkg/data"
-	"strings"
+"fmt"
+"shave/pkg/data"
+"strings"
 )
 
 templ Navigation(user data.SessionUser) {
-	<nav class="uk-navbar-container uk-padding-medium uk-padding-remove-vertical">
-		<div uk-navbar>
-			<div class="uk-navbar-left" hx-boost="true">
-				<a class="flex flex-shrink-0 items-center cursor-pointer" href="/" aria-label="Back to Home">
-					<img class="h-8 w-auto" src="/assets/logo.svg"/>
-				</a>
-				<ul class="uk-navbar-nav">
-					<li>
-						<a href="/todo">
-							Todo
-						</a>
-					</li>
-				</ul>
-			</div>
-			<div class="uk-navbar-right">
-				<div class="uk-navbar-item space-x-2">
-					if user.Email == "" {
-						<a href="/login/google" class="uk-button uk-button-default" aria-label="login with google">
-							<img width="20" height="20" src="/assets/google-icon.svg" class="uk-margin-small-right uk-preserve" uk-svg/>
-							Login with Google
-						</a>
-					} else {
-						@UserMenu(user)
-					}
-				</div>
-				<div class="uk-navbar-item">
-					@ThemeSwitcher()
-				</div>
-			</div>
-		</div>
-	</nav>
+<nav class="uk-navbar-container uk-padding-medium uk-padding-remove-vertical">
+  <div uk-navbar>
+    <div class="uk-navbar-left" hx-boost="true">
+      <a class="flex flex-shrink-0 items-center cursor-pointer" href="/" aria-label="Back to Home">
+        <img class="h-8 w-auto" src="/assets/logo.svg" />
+      </a>
+      <ul class="uk-navbar-nav">
+        <li>
+          <a href="/todo">
+            Todo
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="uk-navbar-right">
+      <div class="uk-navbar-item space-x-2">
+        if user.Email == "" {
+        <a href="/login/google" class="uk-button uk-button-default" aria-label="login with google">
+          <img width="20" height="20" src="/assets/google-icon.svg" class="uk-margin-small-right uk-preserve" uk-svg />
+          Login with Google
+        </a>
+        } else {
+        @UserMenu(user)
+        }
+      </div>
+      <div class="uk-navbar-item">
+        @ThemeSwitcher()
+      </div>
+    </div>
+  </div>
+</nav>
 }
 
 templ UserMenu(user data.SessionUser) {
-	<div class="flex-none">
-		<a
-			class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent ring-ring focus:outline-none focus-visible:ring-1"
-			href="#"
-		>
-			<span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-full">
-				<img
-					class="aspect-square h-full w-full"
-					alt="@shadcn"
-					src={ fmt.Sprintf("https://api.dicebear.com/9.x/initials/svg?seed=%s", strings.Split(user.Email, "@")[0]) }
-				/>
-			</span>
-		</a>
-		<div hx-boost="true" class="uk-dropdown uk-drop" uk-dropdown="mode: click; pos: bottom-right">
-			<ul class="uk-dropdown-nav uk-nav">
-				<li class="px-2 py-1.5 text-sm">
-					<div class="flex flex-col space-y-2">
-						<p class="text-sm font-medium leading-none">{ strings.Split(user.Email, "@")[0] }</p>
-						<p class="text-xs leading-none text-muted-foreground">
-							{ user.Email }
-						</p>
-					</div>
-				</li>
-				<li class="uk-nav-divider"></li>
-				<li>
-					<a class="uk-drop-close justify-between" href="/permissions" uk-toggle>
-						Manage Permissions
-					</a>
-				</li>
-				<li>
-					<a class="uk-drop-close justify-between" href="#" uk-toggle>
-						Billing
-					</a>
-				</li>
-				<li>
-					<a class="uk-drop-close justify-between" href="#" uk-toggle>
-						Organization Settings
-					</a>
-				</li>
-				<li class="uk-nav-divider"></li>
-				<li>
-					<a class="uk-drop-close justify-between" href="/logout" uk-toggle>
-						Logout
-					</a>
-				</li>
-			</ul>
-		</div>
-	</div>
+<div class="flex-none">
+  <a class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent ring-ring focus:outline-none focus-visible:ring-1"
+    href="#">
+    <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-full">
+      if user.AvatarURL == "" {
+      <img class="aspect-square h-full w-full" alt="@shadcn" src={
+        fmt.Sprintf("https://api.dicebear.com/9.x/initials/svg?seed=%s", strings.Split(user.Email, "@" )[0]) } />
+      } else {
+      <img class="aspect-square h-full w-full" alt="user image" src={ user.AvatarURL } />
+      }
+    </span>
+  </a>
+  <div hx-boost="true" class="uk-dropdown uk-drop" uk-dropdown="mode: click; pos: bottom-right">
+    <ul class="uk-dropdown-nav uk-nav">
+      <li class="px-2 py-1.5 text-sm">
+        <div class="flex flex-col space-y-2">
+          <p class="text-sm font-medium leading-none">{ strings.Split(user.Email, "@")[0] }</p>
+          <p class="text-xs leading-none text-muted-foreground">
+            { user.Email }
+          </p>
+        </div>
+      </li>
+      <li class="uk-nav-divider"></li>
+      <li>
+        <a class="uk-drop-close justify-between" href="/permissions" uk-toggle>
+          Manage Permissions
+        </a>
+      </li>
+      <li>
+        <a class="uk-drop-close justify-between" href="#" uk-toggle>
+          Billing
+        </a>
+      </li>
+      <li>
+        <a class="uk-drop-close justify-between" href="#" uk-toggle>
+          Organization Settings
+        </a>
+      </li>
+      <li class="uk-nav-divider"></li>
+      <li>
+        <a class="uk-drop-close justify-between" href="/logout" uk-toggle>
+          Logout
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
 }

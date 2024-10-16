@@ -1,7 +1,7 @@
 -- +goose Up
 CREATE TABLE IF NOT EXISTS sessions (
-  id UUID PRIMARY KEY,
-  user_id UUID NOT NULL,
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
   refresh_token TEXT UNIQUE NOT NULL,
   access_token TEXT UNIQUE NOT NULL,

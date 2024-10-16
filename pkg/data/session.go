@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var supportedProviders = []string{"google", "github"}
+var SupportedProviders = []string{"google", "github"}
 
 type Session struct {
 	AccessToken string
@@ -24,7 +24,7 @@ func (s Session) Valid(ctx context.Context) Problems {
 		problems.Add("AccessToken", "Acess token is empty")
 	}
 
-	if !slices.Contains(supportedProviders, s.Provider) {
+	if !slices.Contains(SupportedProviders, s.Provider) {
 		problems.Add("Provider", "Provider is invalid")
 	}
 

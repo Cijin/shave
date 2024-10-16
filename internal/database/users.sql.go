@@ -20,7 +20,7 @@ RETURNING id, email, sub, name, email_verified, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	ID            interface{}
+	ID            string
 	Email         string
 	Sub           string
 	Name          string
