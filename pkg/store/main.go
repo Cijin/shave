@@ -30,7 +30,6 @@ func New() (*Store, error) {
 
 	cookieStore := sessions.NewCookieStore([]byte(secret))
 	cookieStore.Options.Path = "/"
-	cookieStore.Options.Secure = true
 	cookieStore.Options.HttpOnly = true
 	cookieStore.Options.SameSite = http.SameSiteLaxMode
 

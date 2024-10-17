@@ -71,16 +71,25 @@ func (q *Queries) DeleteSession(ctx context.Context, email string) error {
 }
 
 const getSession = `-- name: GetSession :one
-SELECT refresh_token FROM sessions
+SELECT id, user_id, email, refresh_token, access_token, provider, created_at, updated_at FROM sessions
 WHERE email=?
 LIMIT 1
 `
 
-func (q *Queries) GetSession(ctx context.Context, email string) (string, error) {
+func (q *Queries) GetSession(ctx context.Context, email string) (Session, error) {
 	row := q.db.QueryRowContext(ctx, getSession, email)
-	var refresh_token string
-	err := row.Scan(&refresh_token)
-	return refresh_token, err
+	var i Session
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Email,
+		&i.RefreshToken,
+		&i.AccessToken,
+		&i.Provider,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const updateSession = `-- name: UpdateSession :exec
@@ -88,16 +97,16 @@ UPDATE sessions
 SET 
   refresh_token=?,
   access_token=?
-WHERE email=?
+WHERE id=?
 `
 
 type UpdateSessionParams struct {
 	RefreshToken string
 	AccessToken  string
-	Email        string
+	ID           string
 }
 
 func (q *Queries) UpdateSession(ctx context.Context, arg UpdateSessionParams) error {
-	_, err := q.db.ExecContext(ctx, updateSession, arg.RefreshToken, arg.AccessToken, arg.Email)
+	_, err := q.db.ExecContext(ctx, updateSession, arg.RefreshToken, arg.AccessToken, arg.ID)
 	return err
 }

@@ -12,7 +12,7 @@ DO UPDATE SET
 RETURNING *;
 
 -- name: GetSession :one
-SELECT refresh_token FROM sessions
+SELECT * FROM sessions
 WHERE email=?
 LIMIT 1;
 
@@ -21,7 +21,7 @@ UPDATE sessions
 SET 
   refresh_token=?,
   access_token=?
-WHERE email=?;
+WHERE id=?;
 
 -- name: DeleteSession :exec
 DELETE FROM sessions

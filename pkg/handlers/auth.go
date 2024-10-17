@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -13,10 +14,110 @@ import (
 	"shave/views/home"
 	"shave/views/unauthorized"
 
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 )
+
+type authedHandler func(w http.ResponseWriter, r *http.Request, sessionUser data.SessionUser)
+
+func (h *HttpHandler) CheckAuthoziation(w http.ResponseWriter, r *http.Request) (data.SessionUser, error) {
+	var user data.SessionUser
+
+	session, err := h.store.GetSession(r)
+	if err != nil {
+		return user, err
+	}
+
+	user, err = h.store.GetSessionUser(r)
+	if err != nil {
+		return user, err
+	}
+
+	// TODO: this does not work without metadata in the token
+	// save session id and check saved access token instead??
+	idTokenUserInfo, err := h.authenticator.VerifyIdToken(r.Context(), session.Provider, &oauth2.Token{AccessToken: session.AccessToken, Expiry: session.Expiry})
+	if err != nil {
+		if _, ok := err.(*oidc.TokenExpiredError); ok {
+			return h.refreshToken(w, r, user, session)
+		}
+
+		return data.SessionUser{}, err
+	}
+
+	if !user.IsSessionEqual(idTokenUserInfo) {
+		return data.SessionUser{}, errors.New("session info does not match id token info")
+	}
+
+	return user, nil
+}
+
+func (h *HttpHandler) Authorize(next authedHandler) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sessionUser, err := h.CheckAuthoziation(w, r)
+		if err != nil {
+			slog.Error("Session or User data is malformed or non existent", "AUTHORIZE_ERROR", err)
+
+			if r.URL.Path == "/" {
+				h.HomePage(w, r, data.SessionUser{})
+			} else {
+				http.Redirect(w, r, "/", http.StatusSeeOther)
+			}
+			return
+		}
+
+		if r.URL.Path == "/" {
+			renderComponent(w, r, home.SessionedHome(sessionUser))
+			return
+		}
+
+		next(w, r, sessionUser)
+	})
+}
+
+func (h *HttpHandler) refreshToken(w http.ResponseWriter, r *http.Request, u data.SessionUser, s data.Session) (data.SessionUser, error) {
+	var user data.SessionUser
+
+	savedSession, err := h.dbQueries.GetSession(r.Context(), u.Email)
+	if err != nil {
+		return user, err
+	}
+
+	if savedSession.UserID != u.UserId.String() {
+		return user, fmt.Errorf("user ID from database=%s, does not match session=%s", savedSession.UserID, u.UserId.String())
+	}
+
+	if savedSession.Provider != s.Provider {
+		return user, fmt.Errorf("provider from database=%s does not match session=%s", savedSession.Provider, s.Provider)
+	}
+
+	token, err := h.authenticator.RefreshToken(r.Context(), s.Provider, savedSession.RefreshToken)
+	if err != nil {
+		return user, err
+	}
+
+	updateSessionParams := database.UpdateSessionParams{
+		RefreshToken: token.RefreshToken,
+		AccessToken:  token.AccessToken,
+		ID:           savedSession.ID,
+	}
+
+	err = h.dbQueries.UpdateSession(r.Context(), updateSessionParams)
+	if err != nil {
+		return user, err
+	}
+
+	s.AccessToken = token.AccessToken
+	s.Expiry = token.Expiry
+
+	err = h.store.SaveSession(w, r, s)
+	if err != nil {
+		return user, err
+	}
+
+	return u, nil
+}
 
 func (h *HttpHandler) Login(w http.ResponseWriter, r *http.Request) {
 	sessionVerifier, err := h.store.SaveSessionVerfier(w, r)
@@ -139,5 +240,6 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("HX-Push-Url", "/")
 	renderComponent(w, r, home.SessionedHome(sessionUser))
 }

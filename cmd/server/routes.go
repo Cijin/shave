@@ -7,7 +7,7 @@ import (
 )
 
 func registerRoutes(r chi.Router, h *handlers.HttpHandler) {
-	r.Get("/", h.HomePage)
+	r.Get("/", h.Authorize(h.HomePage))
 
 	r.Get("/login/{provider}", h.Login)
 	r.Get("/auth/{provider}/callback", h.AuthCallback)
