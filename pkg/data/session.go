@@ -71,18 +71,6 @@ func (su SessionUser) Valid(ctx context.Context) Problems {
 	return problems
 }
 
-func (su SessionUser) IsSessionEqual(cmp SessionUser) bool {
-	if su.Sub != cmp.Sub {
-		return false
-	}
-
-	if su.Email != cmp.Email {
-		return false
-	}
-
-	return true
-}
-
 type SessionVerifier struct {
 	Verifier string
 	State    uuid.UUID

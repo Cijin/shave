@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -14,11 +13,12 @@ import (
 	"shave/views/home"
 	"shave/views/unauthorized"
 
-	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 )
+
+const tokenExpiryThreshold = time.Minute * (-5)
 
 type authedHandler func(w http.ResponseWriter, r *http.Request, sessionUser data.SessionUser)
 
@@ -35,19 +35,17 @@ func (h *HttpHandler) CheckAuthoziation(w http.ResponseWriter, r *http.Request) 
 		return user, err
 	}
 
-	// TODO: this does not work without metadata in the token
-	// save session id and check saved access token instead??
-	idTokenUserInfo, err := h.authenticator.VerifyIdToken(r.Context(), session.Provider, &oauth2.Token{AccessToken: session.AccessToken, Expiry: session.Expiry})
+	savedSession, err := h.dbQueries.GetSession(r.Context(), user.Email)
 	if err != nil {
-		if _, ok := err.(*oidc.TokenExpiredError); ok {
-			return h.refreshToken(w, r, user, session)
-		}
-
 		return data.SessionUser{}, err
 	}
 
-	if !user.IsSessionEqual(idTokenUserInfo) {
-		return data.SessionUser{}, errors.New("session info does not match id token info")
+	if savedSession.AccessToken != session.AccessToken || user.UserId.String() != savedSession.UserID {
+		return data.SessionUser{}, err
+	}
+
+	if session.Expiry.Before(time.Now().Add(tokenExpiryThreshold)) {
+		return h.refreshToken(w, r, user, session)
 	}
 
 	return user, nil
@@ -240,6 +238,5 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("HX-Push-Url", "/")
-	renderComponent(w, r, home.SessionedHome(sessionUser))
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

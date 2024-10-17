@@ -79,20 +79,6 @@ func (a *Authenticator) Authenticate(r *http.Request, opts ...oauth2.AuthCodeOpt
 	return token, user, nil
 }
 
-func (a *Authenticator) VerifyIdToken(ctx context.Context, providerName string, token *oauth2.Token) (data.SessionUser, error) {
-	provider, ok := a.providers[providerName]
-	if !ok {
-		return data.SessionUser{}, fmt.Errorf("Provider:'%s' is not a registered provider", providerName)
-	}
-
-	idToken, err := provider.VerifyIdToken(ctx, token)
-	if err != nil {
-		return data.SessionUser{}, err
-	}
-
-	return provider.GetUserInfo(idToken)
-}
-
 func (a *Authenticator) RefreshToken(ctx context.Context, providerName, refreshToken string) (*oauth2.Token, error) {
 	provider, ok := a.providers[providerName]
 	if !ok {
