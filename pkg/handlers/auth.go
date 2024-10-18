@@ -168,8 +168,21 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sessionUser.UserId, _ = uuid.Parse(user.ID)
-	err = h.createSession(r.Context(), sessionUser, token, provider)
+	createSessionParams := database.CreateSessionParams{
+		ID:           getUUID().String(),
+		UserID:       user.ID,
+		Email:        sessionUser.Email,
+		Provider:     provider,
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		CreatedAt:    time.Now().UTC(),
+		UpdatedAt:    time.Now().UTC(),
+	}
+
+	_, err = h.dbQueries.CreateSession(r.Context(), createSessionParams)
 	if err != nil {
+		slog.Error("Unable to save session info", "DB_ERROR", err)
+
 		InternalError(w, r)
 		return
 	}
@@ -226,28 +239,6 @@ func (h *HttpHandler) getOrCreateUser(ctx context.Context, sessionUser data.Sess
 	}
 
 	return user, nil
-}
-
-func (h *HttpHandler) createSession(ctx context.Context, sessionUser data.SessionUser, token *oauth2.Token, provider string) error {
-	createSessionParams := database.CreateSessionParams{
-		ID:           getUUID().String(),
-		UserID:       sessionUser.UserId.String(),
-		Email:        sessionUser.Email,
-		Provider:     provider,
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-		CreatedAt:    time.Now().UTC(),
-		UpdatedAt:    time.Now().UTC(),
-	}
-
-	_, err := h.dbQueries.CreateSession(ctx, createSessionParams)
-	if err != nil {
-		slog.Error("Unable to save session info", "DB_ERROR", err)
-
-		return err
-	}
-
-	return nil
 }
 
 func (h *HttpHandler) Logout(w http.ResponseWriter, r *http.Request, u data.SessionUser) {
