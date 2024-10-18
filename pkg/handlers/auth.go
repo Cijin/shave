@@ -45,7 +45,10 @@ func (h *HttpHandler) CheckAuthoziation(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if session.Expiry.Before(time.Now().Add(tokenExpiryThreshold)) {
-		return h.refreshToken(w, r, user, session)
+		err := h.refreshToken(w, r, savedSession, session)
+		if err != nil {
+			return data.SessionUser{}, err
+		}
 	}
 
 	return user, nil
@@ -74,25 +77,14 @@ func (h *HttpHandler) Authorize(next authedHandler) http.HandlerFunc {
 	})
 }
 
-func (h *HttpHandler) refreshToken(w http.ResponseWriter, r *http.Request, u data.SessionUser, s data.Session) (data.SessionUser, error) {
-	var user data.SessionUser
-
-	savedSession, err := h.dbQueries.GetSession(r.Context(), u.Email)
-	if err != nil {
-		return user, err
-	}
-
-	if savedSession.UserID != u.UserId.String() {
-		return user, fmt.Errorf("user ID from database=%s, does not match session=%s", savedSession.UserID, u.UserId.String())
-	}
-
+func (h *HttpHandler) refreshToken(w http.ResponseWriter, r *http.Request, savedSession database.Session, s data.Session) error {
 	if savedSession.Provider != s.Provider {
-		return user, fmt.Errorf("provider from database=%s does not match session=%s", savedSession.Provider, s.Provider)
+		return fmt.Errorf("provider from database=%s does not match session=%s", savedSession.Provider, s.Provider)
 	}
 
 	token, err := h.authenticator.RefreshToken(r.Context(), s.Provider, savedSession.RefreshToken)
 	if err != nil {
-		return user, err
+		return err
 	}
 
 	updateSessionParams := database.UpdateSessionParams{
@@ -103,7 +95,7 @@ func (h *HttpHandler) refreshToken(w http.ResponseWriter, r *http.Request, u dat
 
 	err = h.dbQueries.UpdateSession(r.Context(), updateSessionParams)
 	if err != nil {
-		return user, err
+		return err
 	}
 
 	s.AccessToken = token.AccessToken
@@ -111,10 +103,10 @@ func (h *HttpHandler) refreshToken(w http.ResponseWriter, r *http.Request, u dat
 
 	err = h.store.SaveSession(w, r, s)
 	if err != nil {
-		return user, err
+		return err
 	}
 
-	return u, nil
+	return nil
 }
 
 func (h *HttpHandler) Login(w http.ResponseWriter, r *http.Request) {

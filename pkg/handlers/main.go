@@ -35,7 +35,7 @@ func NewHttpHandler(db *sql.DB) (*HttpHandler, error) {
 		return nil, err
 	}
 
-	authenticator := authenticator.New(googleProvider)
+	authenticator := authenticator.New(true, googleProvider)
 
 	decoder := schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)

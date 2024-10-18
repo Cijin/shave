@@ -13,17 +13,18 @@ import (
 )
 
 type Authenticator struct {
-	providers map[string]Provider
+	providers          map[string]Provider
+	shouldRefreshToken bool
 }
 
-func New(providers ...Provider) *Authenticator {
+func New(shouldRefreshToken bool, providers ...Provider) *Authenticator {
 	p := make(map[string]Provider, len(providers))
 
 	for _, provider := range providers {
 		p[provider.GetName()] = provider
 	}
 
-	return &Authenticator{p}
+	return &Authenticator{p, shouldRefreshToken}
 }
 
 func (a *Authenticator) getProvider(r *http.Request) (Provider, error) {
@@ -40,6 +41,10 @@ func (a *Authenticator) AuthCodeURL(state string, r *http.Request, opts ...oauth
 	provider, err := a.getProvider(r)
 	if err != nil {
 		return "", err
+	}
+
+	if a.shouldRefreshToken {
+		opts = append(opts, oauth2.AccessTypeOffline)
 	}
 
 	return provider.GetAuthCodeURL(state, opts...), nil
