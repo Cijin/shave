@@ -1,5 +1,5 @@
-# shave
-Like a clean shave (a template for fresh starts)
+# shave 
+![2](https://github.com/user-attachments/assets/718c1ede-b0ff-4a93-82e6-7fa9eafd8db5)
 
 ## Table of Contents
 1. [Getting started](#getting-started)
