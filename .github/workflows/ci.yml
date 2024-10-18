@@ -2,7 +2,7 @@ name: ci
 
 on:
   pull_request:
-    branches: [dev]
+    branches: [main]
 
 env:
   GO_VERSION: '1.23'
