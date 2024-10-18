@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"shave/internal/database"
 	"shave/pkg/authenticator"
@@ -30,12 +31,14 @@ func NewHttpHandler(db *sql.DB) (*HttpHandler, error) {
 		return nil, err
 	}
 
-	googleProvider, err := google.New()
-	if err != nil {
-		return nil, err
+	var auth *authenticator.Authenticator
+	if os.Getenv("ENV") != "TEST" {
+		googleProvider, err := google.New()
+		if err != nil {
+			return nil, err
+		}
+		auth = authenticator.New(true, googleProvider)
 	}
-
-	authenticator := authenticator.New(true, googleProvider)
 
 	decoder := schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)
@@ -47,7 +50,7 @@ func NewHttpHandler(db *sql.DB) (*HttpHandler, error) {
 		dbQueries:     dbQueries,
 		store:         store,
 		schemaDecoder: decoder,
-		authenticator: authenticator,
+		authenticator: auth,
 	}, nil
 }
 
@@ -55,14 +58,13 @@ func NewHttpHandler(db *sql.DB) (*HttpHandler, error) {
 func getUUID() uuid.UUID {
 	id, err := uuid.NewV7()
 	if err != nil {
-		slog.Error("Unable to create uuid v7, defaulting to uuid v4", "Error", err)
+		slog.Warn("Unable to create uuid v7, defaulting to uuid v4", "UUID_v7_ERROR", err)
 		id = uuid.New()
 	}
 
 	return id
 }
 
-// helpers
 // render component should be used when redering items that are part of a page
 // easy way to differentiate, is they usually don't render nav within
 func renderComponent(w http.ResponseWriter, r *http.Request, component templ.Component) {

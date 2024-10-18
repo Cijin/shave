@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log/slog"
@@ -160,51 +161,15 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user database.User
-	user, err = h.dbQueries.GetUser(r.Context(), sessionUser.Email)
+	user, err := h.getOrCreateUser(r.Context(), sessionUser)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			createUserParams := database.CreateUserParams{
-				ID:            getUUID().String(),
-				Email:         sessionUser.Email,
-				Sub:           sessionUser.Sub,
-				Name:          sessionUser.Name,
-				EmailVerified: sessionUser.EmailVerified,
-				CreatedAt:     time.Now().UTC(),
-				UpdatedAt:     time.Now().UTC(),
-			}
-
-			user, err = h.dbQueries.CreateUser(r.Context(), createUserParams)
-			if err != nil {
-				slog.Error("Unable to create user", "DB_ERROR", err)
-
-				InternalError(w, r)
-				return
-			}
-		} else {
-			slog.Error("Unable to get user", "DB_ERROR", err)
-
-			InternalError(w, r)
-			return
-		}
+		InternalError(w, r)
+		return
 	}
+
 	sessionUser.UserId, _ = uuid.Parse(user.ID)
-
-	createSessionParams := database.CreateSessionParams{
-		ID:           getUUID().String(),
-		UserID:       user.ID,
-		Email:        sessionUser.Email,
-		Provider:     provider,
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-		CreatedAt:    time.Now().UTC(),
-		UpdatedAt:    time.Now().UTC(),
-	}
-
-	_, err = h.dbQueries.CreateSession(r.Context(), createSessionParams)
+	err = h.createSession(r.Context(), sessionUser, token, provider)
 	if err != nil {
-		slog.Error("Unable to save session info", "DB_ERROR", err)
-
 		InternalError(w, r)
 		return
 	}
@@ -231,6 +196,58 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *HttpHandler) getOrCreateUser(ctx context.Context, sessionUser data.SessionUser) (database.User, error) {
+	user, err := h.dbQueries.GetUser(ctx, sessionUser.Email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			createUserParams := database.CreateUserParams{
+				ID:            getUUID().String(),
+				Email:         sessionUser.Email,
+				Sub:           sessionUser.Sub,
+				Name:          sessionUser.Name,
+				EmailVerified: sessionUser.EmailVerified,
+				CreatedAt:     time.Now().UTC(),
+				UpdatedAt:     time.Now().UTC(),
+			}
+
+			user, err = h.dbQueries.CreateUser(ctx, createUserParams)
+			if err != nil {
+				slog.Error("Unable to create user", "DB_ERROR", err)
+
+				return database.User{}, err
+			}
+		} else {
+			slog.Error("Unable to get user", "DB_ERROR", err)
+
+			return database.User{}, err
+		}
+	}
+
+	return user, nil
+}
+
+func (h *HttpHandler) createSession(ctx context.Context, sessionUser data.SessionUser, token *oauth2.Token, provider string) error {
+	createSessionParams := database.CreateSessionParams{
+		ID:           getUUID().String(),
+		UserID:       sessionUser.UserId.String(),
+		Email:        sessionUser.Email,
+		Provider:     provider,
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		CreatedAt:    time.Now().UTC(),
+		UpdatedAt:    time.Now().UTC(),
+	}
+
+	_, err := h.dbQueries.CreateSession(ctx, createSessionParams)
+	if err != nil {
+		slog.Error("Unable to save session info", "DB_ERROR", err)
+
+		return err
+	}
+
+	return nil
 }
 
 func (h *HttpHandler) Logout(w http.ResponseWriter, r *http.Request, u data.SessionUser) {

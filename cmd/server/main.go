@@ -120,11 +120,22 @@ func main() {
 
 	slog.Info("Migration", "Version", migrationInfo.VersionId, "Successful", migrationInfo.IsApplied, "Timestamp", migrationInfo.Tstamp)
 	slog.Info("Server starting", "Version", version.Version, "Port", port)
-	if err := server.ListenAndServe(); err != nil {
-		slog.Error("Server failed, shutting down", "error", err)
 
-		if err := server.Shutdown(context.Background()); err != nil {
-			slog.Error("Server shutdown failed", "error", err)
+	done := make(chan os.Signal, 1)
+	go func() {
+		if err := server.ListenAndServe(); err != nil {
+			slog.Error("Server failed to start", "error", err)
+			done <- nil
+
 		}
+	}()
+
+	<-done
+	slog.Info("Shutting down server")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		slog.Error("Unable to shutdown server:", "error", err)
 	}
 }
