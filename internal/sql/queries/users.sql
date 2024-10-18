@@ -10,3 +10,7 @@ RETURNING *;
 SELECT * FROM users
 WHERE email=? 
 LIMIT 1;
+
+-- name: DeleteUser :exec
+DELETE FROM users
+WHERE id=?;

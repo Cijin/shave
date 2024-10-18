@@ -11,6 +11,11 @@ import (
 	_ "github.com/tursodatabase/go-libsql"
 )
 
+const (
+	tempDirPath   = "../../tmp"
+	migrationsDir = "../../cmd/migration/migrations"
+)
+
 var db *sql.DB
 
 func TestMain(m *testing.M) {
@@ -22,7 +27,7 @@ func TestMain(m *testing.M) {
 	defer os.RemoveAll(dir)
 
 	dbPath := filepath.Join(dir, "test.db")
-	db, err = sql.Open("libsql", dbPath)
+	db, err = sql.Open("libsql", "file:"+dbPath)
 	if err != nil {
 		slog.Error("Failed to open db:", "TEST_DB_ERROR", err)
 		os.Exit(1)
@@ -39,13 +44,7 @@ func TestMain(m *testing.M) {
 }
 
 func testTempDir() (string, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
-	tempDirPath := filepath.Join(wd, "tmp")
-	dir, err := os.MkdirTemp(tempDirPath, "test-db")
+	dir, err := os.MkdirTemp(tempDirPath, "test-db-*")
 	if err != nil {
 		return "", err
 	}
@@ -54,12 +53,6 @@ func testTempDir() (string, error) {
 }
 
 func runMigrations(db *sql.DB) error {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-
-	migrationsDir := filepath.Join(wd, "cmd", "migration", "migrations")
 	if err := goose.SetDialect("sqlite"); err != nil {
 		return err
 	}

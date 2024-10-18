@@ -93,12 +93,10 @@ func main() {
 	router.Use(httprate.LimitByIP(100, 1*time.Minute))
 	router.Use(middleware.Cors())
 	router.Use(middleware.VaryCache)
-	//	router.Use(m.Recoverer)
 
 	// Create a route along / that will serve contents from
 	// the public folder
-	workDir, _ := os.Getwd()
-	filesDir := http.Dir(filepath.Join(workDir, "public"))
+	filesDir := http.Dir(filepath.Join(wd, "public"))
 	fileServer(router, "/", filesDir)
 
 	registerRoutes(router, h)
