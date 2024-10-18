@@ -77,6 +77,7 @@ func (s *Store) Clear(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	session.Options.MaxAge = -1
 	session.Values = make(map[interface{}]interface{})
 
 	err = session.Save(r, w)

@@ -11,4 +11,5 @@ func registerRoutes(r chi.Router, h *handlers.HttpHandler) {
 
 	r.Get("/login/{provider}", h.Login)
 	r.Get("/auth/{provider}/callback", h.AuthCallback)
+	r.Get("/logout", h.Authorize(h.Logout))
 }

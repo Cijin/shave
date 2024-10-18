@@ -232,3 +232,24 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
+func (h *HttpHandler) Logout(w http.ResponseWriter, r *http.Request, u data.SessionUser) {
+	err := h.dbQueries.DeleteSession(r.Context(), u.Email)
+	if err != nil {
+		slog.Error("Unable to clear session from db", "DB_ERROR", err)
+
+		InternalError(w, r)
+		return
+	}
+
+	err = h.store.Clear(w, r)
+	if err != nil {
+		slog.Error("Unable to clear session from store", "SESSION_ERROR", err)
+
+		InternalError(w, r)
+		return
+	}
+
+	w.Header().Set("HX-Push-Url", "/")
+	h.HomePage(w, r, data.SessionUser{})
+}
