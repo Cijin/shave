@@ -11,6 +11,9 @@ IMAGE_NAME=shave
 new_secret:
 	openssl rand -base64 64
 
+init:
+	sh init.sh
+
 templ:
 	@templ generate --watch
 
