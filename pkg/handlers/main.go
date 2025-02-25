@@ -68,6 +68,7 @@ func getUUID() uuid.UUID {
 // render component should be used when redering items that are part of a page
 // easy way to differentiate, is they usually don't render nav within
 func renderComponent(w http.ResponseWriter, r *http.Request, component templ.Component) {
+	w.Header().Set("Content-Type", "text/html")
 	err := component.Render(r.Context(), w)
 	if err != nil {
 		slog.Error("Unable to render component: ", "Error", err)
@@ -75,6 +76,7 @@ func renderComponent(w http.ResponseWriter, r *http.Request, component templ.Com
 }
 
 func InternalError(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
 	w.Header().Add("HX-Push-Url", "500")
 	w.Header().Add("HX-Retarget", "body")
 	renderComponent(w, r, internalError.Index())

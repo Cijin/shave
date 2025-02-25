@@ -1,34 +1,49 @@
 package components
 
 templ ThemeSwitcher() {
-<div x-show="theme === 'dark'" class="cursor-pointer" @click={ "theme = 'light'" }>
-  @LightIcon()
+<div class="uk-inline">
+  <button class="uk-btn uk-btn-default uk-btn-icon" aria-label="Customize">
+    <uk-icon icon="palette"></uk-icon>
+  </button>
+  <div class="uk-card uk-card-body uk-drop w-96" data-uk-drop="mode: click; offset: 8">
+    <div class="uk-h3">Customize</div>
+    <p class="mb-4 mt-1 text-muted-foreground">
+      Customize your UI experience.
+    </p>
+    <uk-theme-switcher id="theme-switcher">
+      <select hidden>
+        <optgroup data-key="theme" label="Theme">
+          <option data-hex="#52525b" value="uk-theme-zinc">Zinc</option>
+          <option data-hex="#64748b" value="uk-theme-slate">Slate</option>
+          <option data-hex="#78716c" value="uk-theme-stone">Stone</option>
+          <option data-hex="#6b7280" value="uk-theme-gray">Gray</option>
+          <option data-hex="#737373" value="uk-theme-neutral">Neutral</option>
+          <option data-hex="#dc2626" value="uk-theme-red">Red</option>
+          <option data-hex="#e11d48" value="uk-theme-rose">Rose</option>
+          <option data-hex="#f97316" value="uk-theme-orange">Orange</option>
+          <option data-hex="#16a34a" value="uk-theme-green">Green</option>
+          <option data-hex="#2563eb" value="uk-theme-blue" selected>Blue</option>
+          <option data-hex="#facc15" value="uk-theme-yellow">Yellow</option>
+          <option data-hex="#7c3aed" value="uk-theme-violet">Violet</option>
+        </optgroup>
+        <optgroup data-key="radii" label="Radii">
+          <option value="uk-radii-none">None</option>
+          <option value="uk-radii-sm">Small</option>
+          <option value="uk-radii-md" selected>Medium</option>
+          <option value="uk-radii-lg">Large</option>
+        </optgroup>
+        <optgroup data-key="shadows" label="Shadows">
+          <option value="uk-shadows-none">None</option>
+          <option value="uk-shadows-sm" selected>Small</option>
+          <option value="uk-shadows-md">Medium</option>
+          <option value="uk-shadows-lg">Large</option>
+        </optgroup>
+        <optgroup data-key="mode" label="Mode">
+          <option data-icon="sun" value="light">Light</option>
+          <option data-icon="moon" value="dark">Dark</option>
+        </optgroup>
+      </select>
+    </uk-theme-switcher>
+  </div>
 </div>
-<div x-show="theme === 'light'" class="cursor-pointer" @click={ "theme = 'dark'" }>
-  @DarkIcon()
-</div>
-}
-
-templ DarkIcon() {
-<svg id="theme-toggle-dark-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-  class="lucide lucide-moon">
-  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-</svg>
-}
-
-templ LightIcon() {
-<svg id="theme-toggle-light-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-  class="lucide lucide-sun">
-  <circle cx="12" cy="12" r="4"></circle>
-  <path d="M12 2v2"></path>
-  <path d="M12 20v2"></path>
-  <path d="m4.93 4.93 1.41 1.41"></path>
-  <path d="m17.66 17.66 1.41 1.41"></path>
-  <path d="M2 12h2"></path>
-  <path d="M20 12h2"></path>
-  <path d="m6.34 17.66-1.41 1.41"></path>
-  <path d="m19.07 4.93-1.41 1.41"></path>
-</svg>
 }

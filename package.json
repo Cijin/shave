@@ -8,7 +8,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "franken-ui": "^1.1.0",
-    "postcss": "^8.4.47"
+    "franken-ui": "^2.0.0",
+    "postcss": "^8.5.3"
   }
 }
