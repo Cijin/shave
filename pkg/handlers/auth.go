@@ -83,7 +83,7 @@ func (h *HttpHandler) refreshToken(w http.ResponseWriter, r *http.Request, saved
 		return fmt.Errorf("provider from database=%s does not match session=%s", savedSession.Provider, s.Provider)
 	}
 
-	token, err := h.authenticator.RefreshToken(r.Context(), s.Provider, savedSession.RefreshToken)
+	token, err := h.authenticator.RefreshToken(r.Context(), savedSession.RefreshToken)
 	if err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func (h *HttpHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := h.authenticator.AuthCodeURL(sessionVerifier.State.String(), r, oauth2.S256ChallengeOption(sessionVerifier.Verifier))
+	url, err := h.authenticator.AuthCodeURL(sessionVerifier.State.String(), oauth2.S256ChallengeOption(sessionVerifier.Verifier))
 	if err != nil {
 		slog.Error("Check if provider is registered", "AUTHENTICATOR_ERROR", err)
 

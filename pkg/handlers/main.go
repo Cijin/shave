@@ -8,7 +8,7 @@ import (
 
 	"shave/internal/database"
 	"shave/pkg/authenticator"
-	"shave/pkg/authenticator/providers/google"
+	"shave/pkg/authenticator/providers/clerk"
 	"shave/pkg/store"
 	"shave/views/internalError"
 
@@ -33,11 +33,11 @@ func NewHttpHandler(db *sql.DB) (*HttpHandler, error) {
 
 	var auth *authenticator.Authenticator
 	if os.Getenv("ENV") != "TEST" {
-		googleProvider, err := google.New()
+		clerkProvider, err := clerk.New()
 		if err != nil {
 			return nil, err
 		}
-		auth = authenticator.New(true, googleProvider)
+		auth = authenticator.New(true, clerkProvider)
 	}
 
 	decoder := schema.NewDecoder()
