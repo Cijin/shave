@@ -4,6 +4,7 @@ go 1.24.1
 
 require (
 	github.com/a-h/templ v0.3.906
+	github.com/clerk/clerk-sdk-go/v2 v2.3.1
 	github.com/coreos/go-oidc/v3 v3.11.0
 	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/chi/v5 v5.1.0
@@ -19,10 +20,8 @@ require (
 )
 
 require (
-	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/clerk/clerk-sdk-go/v2 v2.3.1 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
