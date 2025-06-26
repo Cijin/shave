@@ -1,6 +1,5 @@
 .env
 bin
-server
 tmp/*
 
 libsql-*
