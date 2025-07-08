@@ -53,7 +53,7 @@ func (s *Store) Update(w http.ResponseWriter, r *http.Request, key string, value
 }
 
 // use methods to access save, ensures data saved is consistent with app requirements
-func (s *Store) save(w http.ResponseWriter, r *http.Request, values map[string]interface{}) error {
+func (s *Store) save(w http.ResponseWriter, r *http.Request, values map[string]any) error {
 	session, err := s.cookieStore.Get(r, sessionName)
 	if err != nil {
 		return err
@@ -78,7 +78,7 @@ func (s *Store) Clear(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	session.Options.MaxAge = -1
-	session.Values = make(map[interface{}]interface{})
+	session.Values = make(map[any]any)
 
 	err = session.Save(r, w)
 	if err != nil {
@@ -89,7 +89,7 @@ func (s *Store) Clear(w http.ResponseWriter, r *http.Request) error {
 }
 
 // used for testing only
-func (s *Store) GetValues(w http.ResponseWriter, r *http.Request) (map[interface{}]interface{}, error) {
+func (s *Store) GetValues(w http.ResponseWriter, r *http.Request) (map[any]any, error) {
 	session, err := s.cookieStore.Get(r, sessionName)
 	if err != nil {
 		return nil, err
