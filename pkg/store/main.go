@@ -36,7 +36,7 @@ func New() (*Store, error) {
 	return &Store{cookieStore}, nil
 }
 
-func (s *Store) Update(w http.ResponseWriter, r *http.Request, key string, value interface{}) error {
+func (s *Store) Update(w http.ResponseWriter, r *http.Request, key string, value any) error {
 	session, err := s.cookieStore.Get(r, sessionName)
 	if err != nil {
 		return err
