@@ -3,19 +3,20 @@
 ## Table of Contents
 1. [Getting started](#getting-started)
 2. [Set env](#set-env)
-3. [Running dev environment](#running-dev-environment)
-4. [Migrations](#migrations)
+3. [Auth](#auth)
+4. [Running dev environment](#running-dev-environment)
+5. [Migrations](#migrations)
     1. [Create new migration](#create-new-migration)
     2. [Migrating down](#migration.migrate-down)
     3. [Viewing current migration version](#viewing-current-migration-version)
-5. [Directory structure](#directory-structure)
+6. [Directory structure](#directory-structure)
     1 [Views](#views)
     2. [Pkg](#pkg)
-6. [Versioning](#versioning)
+7. [Versioning](#versioning)
     1. [Creating new versions](#creating-new-version)
     2. [Viewing version info](#viewing-version-info)
-7. [Production](#production)
-8. [Using the right final image](#final-image)
+8. [Production](#production)
+9. [Using the right final image](#final-image)
 
 
 ## Getting started 
@@ -35,9 +36,16 @@ Ensure the following dev-dependencies are installed:
 3. For connecting to local database
 4. Connecting to RDS on AWS, get the values from the parameter store as above
 
+## Auth
+
+1. Create a new clerk app
+2. Create a new OAuth app
+3. Add `/auth/clerk/callback` as a redirect url in the clerk config
+4. Paste secrets into env
+
 ## Running dev environment
 
-1. Start the database by running `docker compose up`, use the `-d` flag to run it as a daemon
+1. Start the database by running `make local-db`, use the `-d` flag to run it as a daemon
 2. Run `make dev`, this will run all the project dependencies in watch mode
 
 ## Migrations 

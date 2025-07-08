@@ -10,5 +10,8 @@
   "dependencies": {
     "franken-ui": "^2.0.0",
     "postcss": "^8.5.3"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
   }
 }
