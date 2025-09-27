@@ -1,0 +1,74 @@
+package footer
+
+import (
+	"shave/internal/version"
+	"shave/views/components/icon"
+	"shave/views/components/separator"
+)
+
+templ Footer() {
+	<footer class="bg-background border-t w-full">
+		<div class="container mx-auto py-4 sm:px-6">
+			@FooterContent()
+		</div>
+	</footer>
+}
+
+templ FooterContent() {
+	<div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+		@FooterBrand()
+		<div class="flex-1 flex justify-center">
+			@FooterLinks()
+		</div>
+		@FooterSocial()
+	</div>
+	@separator.Separator(separator.Props{Class: "my-6"})
+	@FooterCopyright()
+}
+
+templ FooterBrand() {
+	<div class="flex items-center gap-2">
+		<img class="h-8 w-auto" src="/assets/logo.svg" alt="Logo"/>
+	</div>
+}
+
+templ FooterLinks() {
+	<nav class="flex items-center gap-6">
+		@FooterLink("About", "#")
+		@FooterLink("Support", "#")
+		@FooterLink("Privacy", "#")
+		@FooterLink("Terms", "#")
+	</nav>
+}
+
+templ FooterSocial() {
+	<div class="flex items-center gap-3">
+		<a href="#" class="text-muted-foreground hover:text-primary transition-colors">
+			@icon.Github(icon.Props{
+				Size: 12,
+			})
+		</a>
+		<a href="#" class="text-muted-foreground hover:text-primary transition-colors">
+			@icon.Twitter(icon.Props{
+				Size: 12,
+			})
+		</a>
+	</div>
+}
+
+templ FooterCopyright() {
+	<div class="text-center">
+		<div class="flex items-center justify-center gap-2 mb-2">
+			<span class="text-sm text-primary">{ version.Version }</span>
+		</div>
+		<p class="text-sm text-muted-foreground">
+			© 2025 Paper Chase. All rights reserved.
+		</p>
+	</div>
+}
+
+templ FooterLink(text, href string) {
+	<a href={ templ.URL(href) } class="text-sm text-muted-foreground hover:text-primary transition-colors">
+		{ text }
+	</a>
+}

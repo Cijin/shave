@@ -1,32 +1,29 @@
 package home
 
 import (
-"shave/pkg/data"
-"shave/views/components"
-"shave/views/layouts"
+	"shave/pkg/data"
+	"shave/views/layouts"
 )
 
 templ Index() {
-@layouts.Base() {
-@components.Navigation(data.SessionUser{Email: ""})
-<main class="w-full">
-  <div class="uk-width-1-3 uk-card uk-card-body uk-card-default">
-    <h3 class="uk-card-title">Welcome</h3>
-    <p class="uk-margin">
-      Login to get started
-    </p>
-  </div>
-</main>
-}
+	@layouts.Base(data.SessionUser{Email: ""}) {
+		<main class="w-full">
+			<div class="uk-width-1-3 uk-card uk-card-body uk-card-default">
+				<h3 class="uk-card-title">Welcome</h3>
+				<p class="uk-margin">
+					Login to get started
+				</p>
+			</div>
+		</main>
+	}
 }
 
 templ SessionedHome(u data.SessionUser) {
-@layouts.Base() {
-@components.Navigation(u)
-<main class="uk-flex uk-flex-center uk-flex-middle uk-margin-xlarge-top">
-  <div class="uk-width-1-3 uk-card uk-card-body uk-card-default">
-    <h3 class="uk-card-title">Welcome { u.Name }</h3>
-  </div>
-</main>
-}
+	@layouts.Base(u) {
+		<main class="uk-flex uk-flex-center uk-flex-middle uk-margin-xlarge-top">
+			<div class="uk-width-1-3 uk-card uk-card-body uk-card-default">
+				<h3 class="uk-card-title">Welcome { u.Name }</h3>
+			</div>
+		</main>
+	}
 }

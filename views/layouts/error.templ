@@ -1,0 +1,12 @@
+package layouts
+
+templ Error() {
+	@Index() {
+		<body hx-ext="sse,response-targets" class="flex flex-col min-h-screen antialiased bg-background text-foreground">
+			<main id="page-content" class="grow flex flex-col">
+				{ children... }
+			</main>
+			<div id="toast-container"></div>
+		</body>
+	}
+}

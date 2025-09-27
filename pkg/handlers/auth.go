@@ -135,7 +135,7 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 	if !slices.Contains(data.SupportedProviders, provider) {
 		slog.Error("Unrecognized provider", "ERROR", fmt.Errorf("unrecognized provider '%s'", provider))
 
-		renderComponent(w, r, unauthorized.Index("Login failed"))
+		renderComponent(w, r, unauthorized.Index())
 		return
 	}
 
@@ -149,7 +149,7 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 
 	stateParam := r.URL.Query().Get("state")
 	if stateParam != sessionVerifier.State.String() {
-		renderComponent(w, r, unauthorized.Index("Unable to login, request was tampered"))
+		renderComponent(w, r, unauthorized.Index())
 		return
 	}
 
@@ -157,7 +157,7 @@ func (h *HttpHandler) AuthCallback(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("Unable to login", "AUTHENTICATOR_ERROR", err)
 
-		renderComponent(w, r, unauthorized.Index("Login failed"))
+		renderComponent(w, r, unauthorized.Index())
 		return
 	}
 

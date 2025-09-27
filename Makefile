@@ -22,7 +22,8 @@ server:
 	@air
 
 css:
-	@npx tailwindcss -i ./public/css/input.css -o ./public/css/style.css --watch
+	@npx @tailwindcss/cli -i ./public/css/input.css -o ./public/css/style.css --watch
+
 
 dev:
 	@make -j3 css templ server

@@ -1,0 +1,42 @@
+package dark_mode
+
+import "shave/views/components/icon"
+
+templ DarkModeToggle() {
+	<div
+		x-data="{
+			darkMode: localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches),
+			init() {
+				this.updateTheme();
+			},
+			toggle() {
+				this.darkMode = !this.darkMode;
+				this.updateTheme();
+			},
+			updateTheme() {
+				if (this.darkMode) {
+					document.documentElement.classList.add('dark');
+					localStorage.setItem('theme', 'dark');
+				} else {
+					document.documentElement.classList.remove('dark');
+					localStorage.setItem('theme', 'light');
+				}
+			}
+		}"
+		class="flex items-center"
+	>
+		<button
+			@click="toggle()"
+			class="inline-flex items-center justify-center w-9 h-9 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+			type="button"
+			aria-label="Toggle dark mode"
+		>
+			<div x-show="!darkMode" x-transition>
+				@icon.Sun(icon.Props{Size: 16})
+			</div>
+			<div x-show="darkMode" x-transition>
+				@icon.Moon(icon.Props{Size: 16})
+			</div>
+		</button>
+	</div>
+}
