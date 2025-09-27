@@ -14,6 +14,9 @@ new_secret:
 init:
 	sh init.sh
 
+local-db:
+	@turso dev -p 6432 --db-file local.db
+
 templ:
 	@templ generate --watch
 

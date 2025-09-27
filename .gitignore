@@ -9,5 +9,7 @@ style.css
 *_templ.go
 *_templ.txt
 
+local*
+
 package-lock.json
 node_modules/
