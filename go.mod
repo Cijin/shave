@@ -1,9 +1,9 @@
 module shave
 
-go 1.24.1
+go 1.25.1
 
 require (
-	github.com/a-h/templ v0.3.906
+	github.com/a-h/templ v0.3.924
 	github.com/clerk/clerk-sdk-go/v2 v2.3.1
 	github.com/coreos/go-oidc/v3 v3.11.0
 	github.com/go-chi/chi v1.5.5
@@ -29,7 +29,7 @@ require (
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.39.0 // indirect
+	golang.org/x/crypto v0.42.0 // indirect
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
-	golang.org/x/sync v0.13.0 // indirect
+	golang.org/x/sync v0.17.0 // indirect
 )

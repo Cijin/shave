@@ -5,12 +5,12 @@ RUN npm install
 COPY . .
 RUN npm run build-css
 
-FROM golang:1.24.1-bookworm AS go-builder
+FROM golang:1.25.1-bookworm AS go-builder
 WORKDIR /app
 COPY . .
 
 RUN go mod download
-RUN go install github.com/a-h/templ/cmd/templ@v0.3.906
+RUN go install github.com/a-h/templ/cmd/templ@v0.3.924
 RUN apt-get update -qq && \
     apt-get install -y ca-certificates && \
     update-ca-certificates

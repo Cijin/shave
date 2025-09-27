@@ -5,8 +5,8 @@ on:
     branches: [main]
 
 env:
-  GO_VERSION: '1.24'
-  TEMPL_VERSION: 'v0.3.906'
+  GO_VERSION: '1.25.1'
+  TEMPL_VERSION: 'v0.3.924'
 
 jobs:
   style:
