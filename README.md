@@ -72,9 +72,7 @@ Most of the files and folders are self-explanatory. I'll only go through the one
 
 ### Views 
 
-The UI is built with [franken-ui](https://franken-ui.dev/docs/introduction), which is an HTML only UI kit, perfect for this use case.
-It uses tailwind-css to style elements. There are a bunch of pre-defined tailwind definitions which begin with `uk-`, so look for these 
-first, only write tailwindcss when absolutely neccessary.
+The UI is built with [templ ui](https://templui.io), which is an HTML only UI kit, perfect for this use case.
 
 For making ajax requests to the server [htmx](https://htmx.org/) is used.
 

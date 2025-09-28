@@ -4,94 +4,305 @@ import (
 	"fmt"
 	"shave/pkg/data"
 	"shave/views/components/dark_mode"
+	"shave/views/components/avatar"
+	"shave/views/components/button"
+	"shave/views/components/dropdown"
+	"shave/views/components/icon"
+	"shave/views/components/separator"
+	"shave/views/components/sheet"
 	"strings"
 )
 
+func getUserAvatarSrc(user data.SessionUser) string {
+	if user.AvatarURL != "" {
+		return user.AvatarURL
+	}
+	return fmt.Sprintf("https://api.dicebear.com/9.x/initials/svg?seed=%s", strings.Split(user.Email, "@")[0])
+}
+
+func getUserInitials(user data.SessionUser) string {
+	email := strings.Split(user.Email, "@")[0]
+	if len(email) >= 2 {
+		return strings.ToUpper(string([]rune(email)[0:2]))
+	}
+	if len(email) == 1 {
+		return strings.ToUpper(string(email[0]))
+	}
+	return "U"
+}
+
 templ Navigation(user data.SessionUser) {
-	<nav class="w-full py-4">
-		<div class="flex justify-between items-center">
-			<div class="flex justify-between items-center space-x-4" hx-boost="true">
-				<a class="flex flex-shrink-0 items-center cursor-pointer" href="/" aria-label="Back to Home">
-					<img class="h-8 w-auto" src="/assets/logo.svg"/>
-				</a>
-				<ul class="flex justify-between space-x-2">
-					<li>
-						<a href="/todo">
-							Todo
-						</a>
-					</li>
-				</ul>
+	@sheet.Sheet(sheet.Props{
+		Side: sheet.SideLeft,
+	}) {
+		@NavigationDesktop(user)
+		@NavigationMobileDrawer(user)
+	}
+}
+
+templ NavigationMobileDrawer(user data.SessionUser) {
+	@sheet.Content() {
+		@NavigationDrawerContent(user)
+	}
+}
+
+templ NavigationDrawerContent(user data.SessionUser) {
+	<div class="flex flex-col h-full">
+		<div class="p-4 border-b bg-background">
+			<div class="flex items-center justify-between mb-4">
+				@NavigationLogo()
 			</div>
-			<div class="flex justify-between items-center space-x-2">
-				<div>
-					@dark_mode.DarkModeToggle()
+			if user.Email != "" {
+				@NavigationUserProfile(user)
+			}
+		</div>
+		<nav class="flex-1 p-4 overflow-y-auto bg-background">
+			<div class="space-y-1">
+				<div class="mb-4">
+					<div class="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Navigation</div>
+					@NavigationMobileMenuItems()
 				</div>
-				<div>
-					if user.Email == "" {
-						<a href="/login/google" class="uk-btn uk-btn-default" aria-label="login with google">
-							<img width="20" height="20" src="/assets/google-icon.svg" class="uk-margin-small-right uk-preserve" uk-svg/>
-							&nbsp;
-							Login with Google
-						</a>
-					} else {
-						@UserMenu(user)
+				if user.Email != "" {
+					@separator.Separator(separator.Props{Class: "my-4"})
+					<div>
+						<div class="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Account</div>
+						@NavigationMobileUserItems()
+					</div>
+				}
+			</div>
+		</nav>
+		@NavigationDrawerFooter(user)
+	</div>
+}
+
+templ NavigationDesktop(user data.SessionUser) {
+	<nav class="sticky top-0 w-full border-b border-border shadow-sm">
+		<div class="container mx-auto px-4">
+			<div class="flex h-16 items-center justify-between">
+				<div class="flex items-center space-x-8">
+					@NavigationLogo()
+					<div class="hidden lg:flex items-center space-x-6 text-muted-foreground">
+						@NavigationMenuItems()
+					</div>
+				</div>
+				@NavigationDesktopUserSection(user)
+				<div class="md:hidden">
+					@sheet.Trigger() {
+						@button.Button(button.Props{
+							Variant: button.VariantGhost,
+							Size:    button.SizeIcon,
+							Class:   "h-9 w-9",
+						}) {
+							@icon.Menu(icon.Props{Size: 20})
+						}
 					}
 				</div>
 			</div>
 		</div>
-		<hr class="mt-4 uk-hr"/>
 	</nav>
 }
 
-templ UserMenu(user data.SessionUser) {
-	<a
-		class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent ring-ring focus:outline-none focus-visible:ring-1"
-		href="#"
-	>
-		<span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-full">
-			if user.AvatarURL == "" {
-				<img
-					class="aspect-square h-full w-full"
-					alt="@shadcn"
-					src={ fmt.Sprintf("https://api.dicebear.com/9.x/initials/svg?seed=%s", strings.Split(user.Email, "@")[0]) }
-				/>
-			} else {
-				<img class="aspect-square h-full w-full" alt="user image" src={ user.AvatarURL }/>
-			}
-		</span>
-	</a>
-	<div hx-boost="true" class="uk-dropdown uk-drop" uk-dropdown="mode: click; pos: bottom-right">
-		<ul class="uk-dropdown-nav uk-nav">
-			<li class="px-2 py-1.5 text-sm">
-				<div class="flex flex-col space-y-2">
-					<p class="text-sm font-medium leading-none">{ user.Name }</p>
-					<p class="text-xs leading-none text-muted-foreground">
-						{ user.Email }
-					</p>
-				</div>
-			</li>
-			<li class="uk-nav-divider"></li>
-			<li>
-				<a class="uk-drop-close justify-between" href="/permissions" uk-toggle>
-					Manage Permissions
-				</a>
-			</li>
-			<li>
-				<a class="uk-drop-close justify-between" href="#" uk-toggle>
-					Billing
-				</a>
-			</li>
-			<li>
-				<a class="uk-drop-close justify-between" href="#" uk-toggle>
-					Organization Settings
-				</a>
-			</li>
-			<li class="uk-nav-divider"></li>
-			<li>
-				<a class="uk-drop-close justify-between" href="/logout" uk-toggle>
-					Logout
-				</a>
-			</li>
-		</ul>
+templ NavigationLogo() {
+	<div class="flex items-center space-x-3">
+		<img class="h-8 w-auto" src="/assets/logo.svg" alt="Logo"/>
+		<div>
+			<div class="text-lg font-bold">Shave</div>
+			<div class="text-xs text-muted-foreground font-medium">Dashboard</div>
+		</div>
 	</div>
+}
+
+templ NavigationUserProfile(user data.SessionUser) {
+	<div class="flex items-center space-x-3">
+		@avatar.Avatar(avatar.Props{
+			Class: "h-12 w-12",
+		}) {
+			@avatar.Image(avatar.ImageProps{
+				Src: getUserAvatarSrc(user),
+				Alt: "User Avatar",
+			})
+			@avatar.Fallback() {
+				{ getUserInitials(user) }
+			}
+		}
+		<div class="flex-1 min-w-0">
+			<div class="font-medium text-primary/80">{ user.Name }</div>
+			<div class="text-sm truncate text-muted-foreground">{ user.Email }</div>
+		</div>
+	</div>
+}
+
+templ NavigationDesktopUserSection(user data.SessionUser) {
+	<div class="hidden md:flex items-center space-x-4 text-muted-foreground">
+		<div>
+			@dark_mode.DarkModeToggle()
+		</div>
+		if user.Email == "" {
+			<a href="/login/google" aria-label="login with google">
+				@button.Button(button.Props{
+					Variant: button.VariantDefault,
+					Class:   "flex items-center gap-2",
+				}) {
+					<img width="20" height="20" src="/assets/google-icon.svg" alt="Google"/>
+					<span>Login with Google</span>
+				}
+			</a>
+		} else {
+			@separator.Separator(separator.Props{
+				Orientation: "vertical",
+				Class:       "h-6",
+			})
+			@NavigationUserDropdown(user)
+		}
+	</div>
+}
+
+templ NavigationUserDropdown(user data.SessionUser) {
+	@dropdown.Dropdown(dropdown.Props{
+		ID: "user-menu",
+	}) {
+		@dropdown.Trigger() {
+			@button.Button(button.Props{
+				Variant: button.VariantGhost,
+				Class:   "flex items-center justify-center gap-2",
+			}) {
+				@avatar.Avatar(avatar.Props{
+					Class: "h-8 w-8 border-2 border-border",
+				}) {
+					@avatar.Image(avatar.ImageProps{
+						Src: getUserAvatarSrc(user),
+						Alt: "User Avatar",
+					})
+					@avatar.Fallback() {
+						{ getUserInitials(user) }
+					}
+				}
+				@icon.ChevronDown(icon.Props{Size: 16, Class: "text-muted-foreground"})
+			}
+		}
+		@dropdown.Content(dropdown.ContentProps{
+			Class: "w-72",
+		}) {
+			<div class="px-4 py-3 border-b">
+				<div class="flex items-center space-x-3">
+					@avatar.Avatar(avatar.Props{
+						Class: "h-12 w-12",
+					}) {
+						@avatar.Image(avatar.ImageProps{
+							Src: getUserAvatarSrc(user),
+							Alt: "User Avatar",
+						})
+						@avatar.Fallback() {
+							{ getUserInitials(user) }
+						}
+					}
+					<div class="flex-1 min-w-0">
+						<div class="font-medium text-primary/80">{ user.Name }</div>
+						<div class="text-sm truncate text-muted-foreground">{ user.Email }</div>
+					</div>
+				</div>
+			</div>
+			<div class="py-1">
+				@dropdown.Item(dropdown.ItemProps{
+					Class: "px-4 py-2",
+				}) {
+					<a href="/permissions" class="flex items-center space-x-3 text-muted-foreground w-full">
+						@icon.Settings(icon.Props{Size: 16})
+						<span class="text-sm">Manage Permissions</span>
+					</a>
+				}
+				@dropdown.Item(dropdown.ItemProps{
+					Class: "px-4 py-2",
+				}) {
+					<a href="#" class="flex items-center space-x-3 text-muted-foreground w-full">
+						@icon.CreditCard(icon.Props{Size: 16})
+						<span class="text-sm">Billing</span>
+					</a>
+				}
+				@dropdown.Item(dropdown.ItemProps{
+					Class: "px-4 py-2",
+				}) {
+					<a href="#" class="flex items-center space-x-3 text-muted-foreground w-full">
+						@icon.Users(icon.Props{Size: 16})
+						<span class="text-sm">Organization Settings</span>
+					</a>
+				}
+			</div>
+			@separator.Separator()
+			<div class="py-1">
+				@dropdown.Item(dropdown.ItemProps{
+					Class: "px-4 py-2 hover:bg-destructive/10",
+				}) {
+					<a href="/logout" class="flex items-center space-x-3 text-muted-foreground w-full">
+						@icon.LogOut(icon.Props{Size: 16, Class: "text-destructive"})
+						<span class="text-sm text-destructive">Logout</span>
+					</a>
+				}
+			</div>
+		}
+	}
+}
+
+templ NavigationDrawerFooter(user data.SessionUser) {
+	<div class="p-4 border-t bg-background">
+		<div class="flex items-center justify-between mb-3">
+			<div>
+				@dark_mode.DarkModeToggle()
+			</div>
+			if user.Email == "" {
+				<a href="/login/google" aria-label="login with google">
+					@button.Button(button.Props{
+						Variant: button.VariantOutline,
+						Class:   "flex items-center gap-2",
+					}) {
+						<img width="16" height="16" src="/assets/google-icon.svg" alt="Google"/>
+						<span>Login</span>
+					}
+				</a>
+			}
+		</div>
+		if user.Email != "" {
+			<a href="/logout" class="w-full">
+				@button.Button(button.Props{
+					Variant: button.VariantOutline,
+					Class:   "w-full justify-start text-destructive hover:bg-destructive/10",
+				}) {
+					@icon.LogOut(icon.Props{Size: 16, Class: "mr-2"})
+					Logout
+				}
+			</a>
+		}
+	</div>
+}
+
+templ NavigationMenuItems() {
+	@button.Button(button.Props{
+		Variant: button.VariantGhost,
+		Class:   "flex items-center gap-2",
+	}) {
+		@icon.Check(icon.Props{Size: 16})
+		<a href="/todo">Todo</a>
+	}
+}
+
+templ NavigationMobileMenuItems() {
+	<a href="/todo" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground">
+		@icon.Check(icon.Props{Size: 18})
+		<span class="font-medium">Todo</span>
+	</a>
+}
+
+templ NavigationMobileUserItems() {
+	<a href="/permissions" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground">
+		@icon.Settings(icon.Props{Size: 18})
+		<span>Manage Permissions</span>
+	</a>
+	<a href="#" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground">
+		@icon.CreditCard(icon.Props{Size: 18})
+		<span>Billing</span>
+	</a>
+	<a href="#" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground">
+		@icon.Users(icon.Props{Size: 18})
+		<span>Organization Settings</span>
+	</a>
 }
